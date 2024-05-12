@@ -173,7 +173,7 @@ data/three_dimensional_model/*
 
 # Weights of different neural networks
 detector/neural_networks/*
-！detector/neural_networks/readme.md
+!detector/neural_networks/readme.md
 
 # Weights of different neural networks
 detector/neural_networks/neural_network_model_weights
