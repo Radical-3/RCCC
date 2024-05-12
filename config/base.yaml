@@ -1,0 +1,7 @@
+# log -----------------------------------------------------------------------
+log_format: '%(asctime)s - %(levelname)s - %(message)s'
+enable_console_log: True
+console_log_level: DEBUG
+enable_file_log: False
+file_log_level: DEBUG
+file_log_path: ./log/operating.log
