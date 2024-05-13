@@ -9,6 +9,7 @@ from detector.neural_networks.yolov7.utils.general import check_img_size, non_ma
     scale_coords
 from detector.neural_networks.yolov7.utils.plots import plot_one_box
 from detector.detector import detector
+
 '''
     本类用于生成目标检测网络-yolov7,对目标图像进行检测返回结果
 '''
@@ -124,3 +125,6 @@ class yolov7(detector):
         if nms:
             pred = non_max_suppression(pred, self._conf_thres, self._iou_thres, self._classes, self._agnostic_nms)
         return pred
+
+    def get_names(self):
+        return self.__names

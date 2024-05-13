@@ -141,3 +141,6 @@ class yolov5(detector):
             pred = non_max_suppression(pred, self._conf_thres, self._iou_thres, self._classes, self._agnostic_nms,
                                        max_det=self._max_det)[0]
         return pred
+
+    def get_names(self):
+        return self.__names
