@@ -1,26 +1,25 @@
 import cv2
-import torch
-from torch import optim
 
-from detector.detector_controller import detector_controller
 from config import Config
 from log import logger
 
+from mesh import Mesh
+from camo import Camo
+from render import Renderer
+from utils import convert_to_numpy
+
 config = Config(logger, './config/base.yaml').item()
 logger.set_config(config)
-detector = detector_controller(config, "yolov7")
-image = cv2.imread("data/dataset/image4.png")
-image_tensor = torch.load("data/dataset/1.pt")
-image_tensor.require_grad = True
-optimizer = optim.Adam([image_tensor], lr=0.01, amsgrad=True)
-for i in range(3):
-    # result = detector.detect(image)
-    result = detector.run(image_tensor)
-    class_confs = result[:, :, 5:5 + 80]
-    class_confs = torch.nn.Softmax(dim=2)(class_confs)
-    class_confs = class_confs[:, :, 2]
-    objectiveness_score = result[:, :, 4]
-    confs_if_object = objectiveness_score * class_confs
-    max_conf, _ = torch.max(confs_if_object, dim=1)
-    loss = max_conf
-    loss.backward()
+
+rd = Renderer(config)
+ms = Mesh(config)
+camo = Camo(config, ms.shape())
+camo.load_mask()
+ms.set_camo(camo)
+mesh = ms.item()
+rd.set_camera_position(8.0, 47.40421576000235, 120.72393414768057)
+image = rd.render(mesh)
+image = convert_to_numpy(image)
+cv2.imwrite("output/test.png", image)
+
+ms.make_texture_map_from_atlas()

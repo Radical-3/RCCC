@@ -3,7 +3,7 @@ import logging
 
 class Logger:
     def __init__(self):
-        self.__logger = logging.getLogger()
+        self.__logger = logging.getLogger("logger")
         self.__logger.setLevel(logging.DEBUG)
         self.__formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         self.__level_dict = {"NOTSET": 0, "DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "CRITICAL": 50}
