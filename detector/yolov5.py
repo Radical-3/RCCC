@@ -7,14 +7,15 @@ from detector.neural_networks.yolov5.utils.general import check_img_size, non_ma
     xyxy2xywh
 from detector.neural_networks.yolov5.utils.torch_utils import time_sync
 from detector.neural_networks.yolov5.utils.plots import Annotator, colors
-from detector.detector import detector
+
+from .detector import Detector
 
 '''
     本类用于生成目标检测网络-yolov5,对目标图像进行检测返回结果
 '''
 
 
-class yolov5(detector):
+class Yolov5(Detector):
     # 初始化函数
     def __init__(self, config):
         super().__init__(config)

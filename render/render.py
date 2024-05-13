@@ -11,6 +11,7 @@ from pytorch3d.renderer import (
     PointLights,
 )
 
+from utils import remove_alpha
 
 '''
     本模块使用pytorch3d中的renderer渲染器实现对3d模型的渲染，接收3d模型，输出渲染后的图片
@@ -35,7 +36,7 @@ class Renderer:
 
     # 设置相机位置，生成camera类
     def set_camera_position(self, dist, elev, azim):
-        R, T = look_at_view_transform(dist, elev, azim, device=self.__device)
+        R, T = look_at_view_transform(dist * self.__config.scale, elev, azim, device=self.__device)
         self.__cameras = FoVPerspectiveCameras(R=R, T=T, device=self.__device)
 
     def set_raster_settings(self):
@@ -71,5 +72,6 @@ class Renderer:
                 lights=self.__lights
             )
         )
-        image = renderer(mesh) * self.__config.scale
+        image = renderer(mesh)
+        image = remove_alpha(image)
         return image

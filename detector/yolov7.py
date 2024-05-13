@@ -8,14 +8,14 @@ from detector.neural_networks.yolov7.utils.datasets import letterbox
 from detector.neural_networks.yolov7.utils.general import check_img_size, non_max_suppression, \
     scale_coords
 from detector.neural_networks.yolov7.utils.plots import plot_one_box
-from detector.detector import detector
+from .detector import Detector
 
 '''
     本类用于生成目标检测网络-yolov7,对目标图像进行检测返回结果
 '''
 
 
-class yolov7(detector):
+class Yolov7(Detector):
     # 初始化函数
     def __init__(self, config):
         super().__init__(config)

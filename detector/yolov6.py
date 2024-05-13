@@ -6,15 +6,15 @@ from detector.neural_networks.yolov6.yolov6.utils.events import LOGGER, load_yam
 from detector.neural_networks.yolov6.yolov6.layers.common import DetectBackend
 from detector.neural_networks.yolov6.yolov6.data.data_augment import letterbox
 from detector.neural_networks.yolov6.yolov6.utils.nms import non_max_suppression
-from detector.detector import detector
 from detector.neural_networks.yolov6.yolov6.core.inferer import Inferer
 
+from .detector import Detector
 '''
     本类用于生成目标检测网络-yolov6,对目标图像进行检测返回结果
 '''
 
 
-class yolov6(detector):
+class Yolov6(Detector):
     # 初始化函数
     def __init__(self, config):
         super().__init__(config)

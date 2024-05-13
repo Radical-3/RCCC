@@ -3,7 +3,7 @@ import torch
 from log import logger
 
 
-class detector:
+class Detector:
     def __init__(self, config: types.SimpleNamespace):
         self._config = config
         self._device = torch.device("cpu")

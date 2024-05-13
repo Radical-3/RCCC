@@ -65,5 +65,6 @@ yolov7_weights: "detector/neural_networks/neural_network_model_weights/yolov7.pt
 # train --------------------------------------------------------------
 epochs: 100
 batch_size: 1
+lr: 0.03
 min_light:
 max_light:
