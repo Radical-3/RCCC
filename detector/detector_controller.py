@@ -33,3 +33,6 @@ class detector_controller:
     def detect(self, image):
         result_detect = self.detector.detect(image)
         return result_detect
+
+    def get_names(self):
+        return self.detector.get_names()
