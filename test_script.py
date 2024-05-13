@@ -8,7 +8,7 @@ from log import logger
 
 config = Config(logger, './config/base.yaml').item()
 logger.set_config(config)
-detector = detector_controller(config, "yolov6")
+detector = detector_controller(config, "yolov7")
 image = cv2.imread("data/dataset/image4.png")
 image_tensor = torch.load("data/dataset/1.pt")
 image_tensor.require_grad = True
