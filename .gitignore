@@ -172,7 +172,9 @@ data/three_dimensional_model/*
 !data/three_dimensional_model/readme.md
 
 # Weights of different neural networks
-detector/neural_networks/*
+detector/neural_networks/yolov5
+detector/neural_networks/yolov6
+detector/neural_networks/yolov7
 !detector/neural_networks/readme.md
 
 
