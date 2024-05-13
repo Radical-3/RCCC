@@ -17,6 +17,7 @@ texture_size: 32
 texture_map_save_path: ./output
 
 # Render -----------------------------------------------------------------------
+scale: 0.97
 render_image_size: 1152
 light: [ 0.0, 10.0, 0.0 ]
 blur_radius: 0  # [0, 2]
@@ -31,10 +32,7 @@ z_clip_value:
 cull_to_frustum: False
 
 # dataset -------------------------------------------------------------------
-scale: 0.97
 dataset_path: data/dataset/package
-batch_size: 1
-dataset_size: 4
 
 # Detector -------------------------------------------------------------------
 img_sz: [1152,1152]
@@ -63,3 +61,9 @@ yaml: detector/neural_networks/yolov6/data/coco.yaml
 half: False
 # yolov7
 yolov7_weights: "detector/neural_networks/neural_network_model_weights/yolov7.pt"
+
+# train --------------------------------------------------------------
+epochs: 100
+batch_size: 1
+min_light:
+max_light:

@@ -71,5 +71,5 @@ class Renderer:
                 lights=self.__lights
             )
         )
-        image = renderer(mesh)
+        image = renderer(mesh) * self.__config.scale
         return image
