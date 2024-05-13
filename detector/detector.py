@@ -33,3 +33,7 @@ class detector:
     def run(self, img, nms):
         logger.error("You should implement this method in your subclass")
         raise NotImplementedError()
+
+    def get_names(self):
+        logger.error("You should implement this method in your subclass")
+        raise NotImplementedError()
