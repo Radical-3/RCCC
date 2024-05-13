@@ -19,7 +19,7 @@ texture_map_save_path: ./output
 # Render -----------------------------------------------------------------------
 render_image_size: 1152
 light: [ 0.0, 10.0, 0.0 ]
-blur_radius: 0 #[0,2]
+blur_radius: 0  # [0, 2]
 faces_per_pixel: 1
 bin_size:
 max_faces_opengl: 10000000
@@ -29,3 +29,37 @@ clip_barycentric_coords:
 cull_backfaces: False
 z_clip_value:
 cull_to_frustum: False
+
+# dataset -------------------------------------------------------------------
+scale: 0.97
+dataset_path: data/dataset/package
+batch_size: 1
+dataset_size: 4
+
+# Detector -------------------------------------------------------------------
+img_sz: [1152,1152]
+conf_thres: 0.25
+iou_thres: 0.45
+max_det: 1000
+view_img: False
+save_boxes: True
+save_conf: True
+classes: 2
+agnostic_nms: False
+visualize: False
+augment: True
+line_thickness: 3
+hide_labels: False
+hide_conf: False
+save_crop: False
+save_img: True
+only_objectness: False
+train_classes: 2
+# yolov5
+yolov5_weights: "detector/neural_networks/neural_network_model_weights/yolov5x6.pt"
+# yolov6
+yolov6_weights: "detector/neural_networks/neural_network_model_weights/yolov6m.pt"
+yaml: detector/neural_networks/yolov6/data/coco.yaml
+half: False
+# yolov7
+yolov7_weights: "detector/neural_networks/neural_network_model_weights/yolov7.pt"
