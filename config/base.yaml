@@ -63,9 +63,9 @@ half: False
 yolov7_weights: "detector/neural_networks/neural_network_model_weights/yolov7.pt"
 
 # train --------------------------------------------------------------
-epochs: 60
+epochs: 2
 batch_size: 1
-lr: 0.01
+lr: 0.03
 add_brightness: True
 min_brightness: -0.2
 max_brightness: 0.2
@@ -74,7 +74,8 @@ min_contrast: 0.8
 max_contrast: 1.2
 mps_weight: 1000
 tv_weight: 25
-save_camo_to_pth: True
+save_camo_to_pth: False
 save_camo_pth_path: "output/final_camo.pth"
 save_camo_to_txt: False
+save_camo_txt_path: "output/final_camo.txt"
 save_camo_to_png: True

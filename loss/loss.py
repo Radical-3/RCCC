@@ -41,11 +41,12 @@ class Loss:
 
         # 最后返回所有锚框中 最大的概率得分的锚框的概率得分
         max_conf, _ = torch.max(confs_if_object, dim=1)
-        return max_conf
+        maximum_probability_score_loss = max_conf
+        return maximum_probability_score_loss * self.__config.mps_weight
 
     # 平滑函数
-    @staticmethod
-    def total_variation(image, mask):
+
+    def total_variation(self, image, mask):
         # 计算patch第二维即宽上相邻两像素之间的差值，使用绝对值函数保证正数，并求和,得到一个一维张量
         # 每个值对应列上元素差值，并将每一列的差值求和得到宽上所有列差值的总和
         variation_w = torch.sum(torch.abs(image[:, 1:, :] - image[:, :-1, :] + 0.000001), 0)
@@ -56,4 +57,5 @@ class Loss:
         variation_h = torch.sum(torch.sum(variation_h, 0), 0)
         variation = variation_w + variation_h
         num = image.size(0) * image.size(1) - np.count_nonzero(mask)
-        return variation / num
+        total_variation_loss = variation / num
+        return torch.max(total_variation_loss * self.__config.tv_weight, torch.tensor(0.1, device=self.__config.device))
