@@ -2,11 +2,11 @@ import time
 import torch
 import numpy as np
 
-from detector.neural_networks.yolov6.yolov6.utils.events import LOGGER, load_yaml
-from detector.neural_networks.yolov6.yolov6.layers.common import DetectBackend
-from detector.neural_networks.yolov6.yolov6.data.data_augment import letterbox
-from detector.neural_networks.yolov6.yolov6.utils.nms import non_max_suppression
-from detector.neural_networks.yolov6.yolov6.core.inferer import Inferer
+from .neural_networks.yolov6.yolov6.utils.events import LOGGER, load_yaml
+from .neural_networks.yolov6.yolov6.layers.common import DetectBackend
+from .neural_networks.yolov6.yolov6.data.data_augment import letterbox
+from .neural_networks.yolov6.yolov6.utils.nms import non_max_suppression
+from .neural_networks.yolov6.yolov6.core.inferer import Inferer
 
 from .detector import Detector
 '''

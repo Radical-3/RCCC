@@ -1,2 +1,2 @@
 from .loss import Loss
-from .utils import random_light
+from .utils import transform

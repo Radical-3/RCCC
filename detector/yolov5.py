@@ -1,12 +1,12 @@
 import torch
 import numpy as np
 
-from detector.neural_networks.yolov5.utils.augmentations import letterbox
-from detector.neural_networks.yolov5.models.experimental import attempt_load
-from detector.neural_networks.yolov5.utils.general import check_img_size, non_max_suppression, scale_boxes, \
+from .neural_networks.yolov5.utils.augmentations import letterbox
+from .neural_networks.yolov5.models.experimental import attempt_load
+from .neural_networks.yolov5.utils.general import check_img_size, non_max_suppression, scale_boxes, \
     xyxy2xywh
-from detector.neural_networks.yolov5.utils.torch_utils import time_sync
-from detector.neural_networks.yolov5.utils.plots import Annotator, colors
+from .neural_networks.yolov5.utils.torch_utils import time_sync
+from .neural_networks.yolov5.utils.plots import Annotator, colors
 
 from .detector import Detector
 

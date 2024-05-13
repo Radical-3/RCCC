@@ -3,11 +3,11 @@ import numpy as np
 import torch
 
 from numpy import random
-from detector.neural_networks.yolov7.models.experimental import attempt_load
-from detector.neural_networks.yolov7.utils.datasets import letterbox
-from detector.neural_networks.yolov7.utils.general import check_img_size, non_max_suppression, \
+from .neural_networks.yolov7.models.experimental import attempt_load
+from .neural_networks.yolov7.utils.datasets import letterbox
+from .neural_networks.yolov7.utils.general import check_img_size, non_max_suppression, \
     scale_coords
-from detector.neural_networks.yolov7.utils.plots import plot_one_box
+from .neural_networks.yolov7.utils.plots import plot_one_box
 from .detector import Detector
 
 '''
