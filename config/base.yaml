@@ -32,7 +32,7 @@ z_clip_value:
 cull_to_frustum: False
 
 # dataset -------------------------------------------------------------------
-dataset_path: data/dataset/package
+dataset_path: data/dataset/default_1/package
 
 # Detector -------------------------------------------------------------------
 img_sz: [1152,1152]
@@ -61,6 +61,12 @@ yaml: detector/neural_networks/yolov6/data/coco.yaml
 half: False
 # yolov7
 yolov7_weights: "detector/neural_networks/neural_network_model_weights/yolov7.pt"
+
+# clean --------------------------------------------------------------
+clean_conf_threshold: 0.25
+clean_iou_threshold: 0.45
+cleaning: True
+cleaning_result_path: "output/cleaning_result.txt"
 
 # train --------------------------------------------------------------
 epochs: 2
