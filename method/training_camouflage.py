@@ -5,7 +5,7 @@ from torch import optim
 from tqdm import tqdm
 
 from config import Config
-from dataloader.dataset import Dataset
+from dataloader import Dataset
 from detector import Detector_Controller
 from log import logger
 from mesh import Mesh
