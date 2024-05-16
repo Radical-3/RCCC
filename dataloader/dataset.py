@@ -4,7 +4,7 @@ import numpy
 from torch.utils.data import Dataset as torch_dataset
 from torch.utils.data import DataLoader as torch_dataloader
 
-from dataloader.dataset_produce import Dataset_Produce
+from .dataset_produce import Dataset_Produce
 
 '''
     本模块用于数据集的读取以及dataset的生成
