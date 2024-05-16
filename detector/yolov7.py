@@ -107,7 +107,7 @@ class Yolov7(Detector):
                     # 使用plot添加边界框和置信度，类别
                     plot_one_box(xyxy, im0, label=label, color=self.__colors[int(cls)], line_thickness=1)
         # 输出相关信息
-        print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')
+        # print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')
         # 得到画框处理后的结果
         im_result = im0
         # 放入结果列表

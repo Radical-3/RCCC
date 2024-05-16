@@ -133,7 +133,7 @@ class Yolov6(Detector):
                     xywh = (Inferer.box_convert(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()
                     # 如果要记录置信度，就记录类别、坐标、置信度，否则只记录其他两个
                     line = (cls, *xywh, conf) if self._save_conf else (cls, *xywh)
-                    print(line)
+                    # print(line)
                 # 如果要保存图片或者裁剪或者看图片
                 if self._save_img or self._save_crop or self._view_img:
                     # 当前检测类别的索引
@@ -145,7 +145,7 @@ class Yolov6(Detector):
                     # 调用函数进行画框
                     Inferer.plot_box_and_label(img_ori, max(round(sum(img_ori.shape) / 2 * 0.003), 2), xyxy, label,
                                                color=Inferer.generate_colors(class_num, True))
-            print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')
+            # print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')
             # 将图片转换为numpy格式
             img_src = np.asarray(img_ori)
             return img_src, result_lb
