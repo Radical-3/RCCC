@@ -64,9 +64,6 @@ def training_camouflage():
     if config.save_camo_to_pth:
         camo.save_camo_pth()
 
-    if config.save_camo_to_txt:
-        camo.save_camo_txt()
-
     if config.save_camo_to_png:
         ms.set_camo(camo)
         ms.make_texture_map_from_atlas()
