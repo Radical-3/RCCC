@@ -20,7 +20,7 @@ def training_camouflage():
     detector = Detector_Controller(config, "yolov5")
     loss = Loss(config, detector)
 
-    dataset = Dataset(config, config.dataset_path)
+    dataset = Dataset(config, config.train_dataset_path)
     rd = Renderer(config)
     ms = Mesh(config)
     camo = Camo(config, ms.shape())
