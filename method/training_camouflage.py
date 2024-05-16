@@ -5,7 +5,7 @@ from torch import optim
 from tqdm import tqdm
 
 from config import Config
-from dataloader.dataset import Dataset
+from dataloader import Dataset
 from detector import Detector_Controller
 from log import logger
 from mesh import Mesh
@@ -20,7 +20,7 @@ def training_camouflage():
     detector = Detector_Controller(config, "yolov5")
     loss = Loss(config, detector)
 
-    dataset = Dataset(config)
+    dataset = Dataset(config, config.dataset_path)
     rd = Renderer(config)
     ms = Mesh(config)
     camo = Camo(config, ms.shape())

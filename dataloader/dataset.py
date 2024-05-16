@@ -13,31 +13,37 @@ from dataloader.dataset_produce import Dataset_Produce
 
 # 定义LoadData类 ，作用：将本地中的数据读取为一个dataset
 class Dataset(torch_dataset):
-    def __init__(self, config: types.SimpleNamespace):
+    def __init__(self, config, dataset_path):
+        self.__config = config
+        self.__dataset_path = dataset_path
+
         self.__data_labels = list()
         self.__suffix_name = list()
         self.__data = list()
+
         self.__dataloader_item = None
         self.__dataset_iterator = None
         self.__dataset = None
-        self.__config = config
-        self.get_local_filename(config.dataset_path)
-        self.iterator_dataset(config)
-        self.get_dataloader(self.__dataset_iterator, config)
+
+        self.__load_all = self.__config.all_dataset
+        self.__local_filename(self.__dataset_path)
+        self.__dataset_size = len(self.__data_labels) if self.__load_all else self.__config.dataset_size
 
     def __len__(self):
         return len(self.__data_labels)
 
     def __iter__(self):
+        self.__dataset_iterator = self.__local_data(self.__dataset_path, self.__dataset_size)
+        self.__dataloader(self.__dataset_iterator, self.__config)
         self.__index = 0
         return self
 
     def __next__(self):
-        if self.__index == self.__config.dataset_size - 1:
+        if self.__index == self.__dataset_size - 1:
             try:
                 result = self.__data[self.__index]
                 self.__index = 0
-                self.get_dataloader(self.__dataset_iterator, self.__config)
+                self.__dataloader(self.__dataset_iterator, self.__config)
                 return result
             except (IndexError, TypeError):
                 raise StopIteration
@@ -49,7 +55,7 @@ class Dataset(torch_dataset):
             except (IndexError, TypeError):
                 raise StopIteration
 
-    def get_local_filename(self, path):
+    def __local_filename(self, path):
         # 初始化数据的标签列表
         data_labels = list()
         # 遍历数据文件
@@ -62,16 +68,16 @@ class Dataset(torch_dataset):
         self.__data_labels = data_labels
         self.__suffix_name = suffix_name
 
-    def read_local_data(self, path, size):
+    def __local_data(self, path, load_size):
         count = 0
-        select_labels = self.__data_labels[(size * count):(size * (count + 1))]
-        while len(select_labels) == size:
+        select_labels = self.__data_labels[(load_size * count):(load_size * (count + 1))]
+        while len(select_labels) == load_size:
             dataset = None
             # 用于返回数据的字典
             try:
-                select_labels = self.__data_labels[(size * count):(size * (count + 1))]
+                select_labels = self.__data_labels[(load_size * count):(load_size * (count + 1))]
             except IndexError:
-                select_labels = self.__data_labels[(size * count):]
+                select_labels = self.__data_labels[(load_size * count):]
             if len(select_labels) > 0:
                 for data_label in select_labels:
                     # data为读取的文件里面的数据
@@ -81,10 +87,7 @@ class Dataset(torch_dataset):
             count = count + 1
             yield dataset
 
-    def iterator_dataset(self, config):
-        self.__dataset_iterator = self.read_local_data(config.dataset_path, config.dataset_size)
-
-    def next_dataset(self, dataset_iterator):
+    def __next_dataset(self, dataset_iterator):
         try:
             dataset_item = next(dataset_iterator)
             if dataset_item is not None:
@@ -94,8 +97,8 @@ class Dataset(torch_dataset):
         except StopIteration:
             self.__dataset = None
 
-    def get_dataloader(self, dataset_iterator, config):
-        self.next_dataset(dataset_iterator)
+    def __dataloader(self, dataset_iterator, config):
+        self.__next_dataset(dataset_iterator)
         if self.__dataset is not None:
             self.__dataloader_item = torch_dataloader(self.__dataset, batch_size=config.batch_size)
             self.__data = list(self.__dataloader_item)

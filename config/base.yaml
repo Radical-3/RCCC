@@ -33,7 +33,8 @@ cull_to_frustum: False
 
 # dataset -------------------------------------------------------------------
 dataset_path: data/dataset/default_1/package
-dataset_size: 3
+dataset_size: 1
+all_dataset: True
 
 # Detector -------------------------------------------------------------------
 img_sz: [1152,1152]
