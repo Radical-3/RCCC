@@ -55,9 +55,8 @@ def test_camouflage():
                 result = list()
                 result.append(detector.detect(image)[0])
                 result.append(detector.detect(image_with_camo)[0])
-                image = np.hstack(result)
 
-                cv2.imwrite(os.path.join(config.test_result_path, f"{data[0].item()}.png"), image)
+                cv2.imwrite(os.path.join(config.test_result_path, f"{data[0].item()}.png"), np.hstack(result))
 
         for elev in np.linspace(5, 75, 10):
             images = list()
@@ -74,8 +73,10 @@ def test_camouflage():
                     result = list()
                     result.append(detector.detect(image)[0])
                     result.append(detector.detect(image_with_camo)[0])
+
                     images.append(cv2.cvtColor(np.hstack(result), cv2.COLOR_BGR2RGB))
-                path = os.path.join(config.test_result_path, f"rotation_{elev:.1f}.gif")
+
+            path = os.path.join(config.test_result_path, f"rotation_{elev:.1f}.gif")
             logger.info(f"start drawing a gif to {path}")
             with imageio.get_writer(path, mode='I', duration=0.01) as writer:
                 for img in images:
