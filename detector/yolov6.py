@@ -29,7 +29,7 @@ class Yolov6(Detector):
         # 加载类别名称
         self.__class_names = load_yaml(self.__yaml)['names']
         # 将模型转换为部署状态
-        self.model_switch(self.__model.model)
+        Inferer.model_switch(self.__model.model)
         # 执行了模型参数的精度转换，以便在部署时使用更低的浮点精度
         if self.__half & (self._device.type != 'cpu'):
             self.__model.model.half()
@@ -45,20 +45,6 @@ class Yolov6(Detector):
         if self._device.type != 'cpu':
             self.__model(torch.zeros(1, 3, *self._image_size).to(self._device).type_as(
                 next(self.__model.model.parameters())))  # warmup
-
-    # 转换模型的部署状态
-    @staticmethod
-    def model_switch(model):
-        from detector.neural_networks.yolov6.yolov6.layers.common import RepVGGBlock
-        # 遍历模型中的所有模块
-        for layer in model.modules():
-            # 如果有此模块，转换部署状态
-            if isinstance(layer, RepVGGBlock):
-                layer.switch_to_deploy()
-            elif isinstance(layer, torch.nn.Upsample) and not hasattr(layer, 'recompute_scale_factor'):
-                layer.recompute_scale_factor = None
-        # 记录一个日志信息
-        LOGGER.info("Switch model to deploy modality.")
 
     # 检测函数，接收图片，调用网络并进行检测，返回检测结果
     def detect(self, im0s):
