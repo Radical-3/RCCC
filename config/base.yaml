@@ -13,7 +13,7 @@ file_log_path: ./log/operating.log
 # Mesh -------------------------------------------------------------------------
 model_path: data/three_dimensional_model/audi_etron/audi_etron.obj
 face_path: data/three_dimensional_model/audi_etron/merged_output.txt
-texture_size: 32
+texture_size: 38
 texture_map_save_path: ./output
 
 # Render -----------------------------------------------------------------------
@@ -32,8 +32,8 @@ z_clip_value:
 cull_to_frustum: False
 
 # dataset -------------------------------------------------------------------
-dataset_path: data/dataset/default_1/package
-dataset_size: 3
+dataset_size: 1
+all_dataset: True
 
 # Detector -------------------------------------------------------------------
 img_sz: [1152,1152]
@@ -70,6 +70,7 @@ cleaning: True
 cleaning_result_path: "output/cleaning_result.txt"
 
 # train --------------------------------------------------------------
+train_dataset_path: data/dataset/radius_7/train
 epochs: 2
 batch_size: 1
 lr: 0.03
@@ -83,6 +84,8 @@ mps_weight: 1000
 tv_weight: 25
 save_camo_to_pth: False
 save_camo_pth_path: "output/final_camo.pth"
-save_camo_to_txt: False
-save_camo_txt_path: "output/final_camo.txt"
 save_camo_to_png: True
+
+# test --------------------------------------------------------------
+test_dataset_path: data/dataset/radius_7/test
+test_result_path: "output/test"

@@ -1,4 +1,3 @@
-
 import warnings
 
 import cv2
@@ -75,7 +74,9 @@ class Mesh:
             faces_material_ind = torch.from_numpy(self.__face_material_names == material_name).to(self.__device)
             texture = self.__atlas[faces_material_ind, :, :]
             self.calculate_coordinate_bias()
+
             uvs_subset = faces_verts_uvs[faces_material_ind, :, :] % 1.0
+            uvs_subset[uvs_subset > 1] = 0
             uv_pos = (uvs_subset[:, None, None, None] * self.__coordinate_bias[..., None]).sum(-2)
             self.create_texture_map(uv_pos, texture, image, material_name)
 

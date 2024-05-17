@@ -1,4 +1,4 @@
-from method import training_camouflage, dataset_cleaning
+from method import training_camouflage, dataset_cleaning,test_camouflage
 
 if __name__ == "__main__":
-    dataset_cleaning()
+    test_camouflage()

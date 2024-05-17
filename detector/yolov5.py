@@ -113,7 +113,7 @@ class Yolov5(Detector):
                     xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()
                     # 如果要记录置信度，就记录类别、坐标、置信度，否则只记录其他两个
                     line = (cls, *xywh, conf) if self._save_conf else (cls, *xywh)
-                    print(line)
+                    # print(line)
                 # 如果要保存图片或者裁剪或者看图片
                 if self._save_img or self._save_crop or self._view_img:
                     # 当前检测类别的索引
@@ -123,7 +123,7 @@ class Yolov5(Detector):
                         self.__names[c] if self._hide_conf else f'{self.__names[c]} {conf:.2f}')
                     # 将坐标，标签置信度给画图对象annotator
                     annotator.box_label(xyxy, label, color=colors(c, True))
-        print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')
+        # print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')
         # 得到画框处理后的结果
         im_result = annotator.result()
         # 放入结果列表
