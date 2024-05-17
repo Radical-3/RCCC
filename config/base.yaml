@@ -32,7 +32,6 @@ z_clip_value:
 cull_to_frustum: False
 
 # dataset -------------------------------------------------------------------
-dataset_path: data/dataset/radius_7/test
 dataset_size: 1
 all_dataset: True
 

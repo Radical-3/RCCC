@@ -61,7 +61,7 @@ def test_camouflage():
 
         for elev in np.linspace(5, 75, 10):
             images = list()
-            with tqdm(np.linspace(0, 360, 72), desc=f"rotation gif({elev:.1f})") as pbar:
+            with tqdm(np.linspace(0, 360, 360), desc=f"rotation gif({elev:.1f})") as pbar:
                 for azim in pbar:
                     rd.set_camera_position(dist=6, elev=elev, azim=azim)
 
@@ -74,10 +74,10 @@ def test_camouflage():
                     result = list()
                     result.append(detector.detect(image)[0])
                     result.append(detector.detect(image_with_camo)[0])
-                    images.append(np.hstack(result))
+                    images.append(cv2.cvtColor(np.hstack(result), cv2.COLOR_BGR2RGB))
                 path = os.path.join(config.test_result_path, f"rotation_{elev:.1f}.gif")
             logger.info(f"start drawing a gif to {path}")
-            with imageio.get_writer(path, mode='I', duration=0.1) as writer:
+            with imageio.get_writer(path, mode='I', duration=0.01) as writer:
                 for img in images:
                     writer.append_data(img)
             logger.info(f"finish drawing a gif to {path}")
