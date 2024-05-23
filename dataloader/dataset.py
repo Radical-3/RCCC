@@ -1,5 +1,4 @@
 import os
-import types
 import numpy
 from torch.utils.data import Dataset as torch_dataset
 from torch.utils.data import DataLoader as torch_dataloader
@@ -80,9 +79,7 @@ class Dataset(torch_dataset):
                 select_labels = self.__data_labels[(load_size * count):]
             if len(select_labels) > 0:
                 for data_label in select_labels:
-                    # data为读取的文件里面的数据
                     data = numpy.load(os.path.join(path, data_label + self.__suffix_name), allow_pickle=True)
-                    # numpy.vstack(a,b)将a和b数组向下叠加
                     dataset = numpy.vstack((dataset, data)) if dataset is not None else data
             count = count + 1
             yield dataset
