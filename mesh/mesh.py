@@ -81,7 +81,7 @@ class Mesh:
             self.create_texture_map(uv_pos, texture, image, material_name)
 
     def create_texture_map(self, uv_pos, texture, image, name):
-        h, w = image.shape[0:2]
+        w, h = image.shape[0:2]
         uv_pos[..., 0] = (uv_pos[..., 0] * h).round()
         uv_pos[..., 1] = (uv_pos[..., 1] * w).round()
         uv_pos = uv_pos.detach().cpu().numpy().astype(np.int32)
