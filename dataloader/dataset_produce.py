@@ -1,4 +1,4 @@
-from torch.utils.data import Dataset as torch_dataset
+from torch.utils.data import Dataset as Torch_Dataset
 
 
 '''
@@ -7,7 +7,7 @@ from torch.utils.data import Dataset as torch_dataset
 
 
 # 定义LoadData类 ，作用：将本地中的数据读取为一个dataset
-class Dataset_Produce(torch_dataset):
+class Dataset_Produce(Torch_Dataset):
     def __init__(self, dataset):
         # 检查传入的数据是否是列表，如果不是，将其包装在一个列表中
         if dataset[0].size == 1:
@@ -22,5 +22,3 @@ class Dataset_Produce(torch_dataset):
     # 得到数据长度
     def __len__(self):
         return len(self.__dataset)
-
-
