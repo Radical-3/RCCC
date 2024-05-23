@@ -13,13 +13,17 @@ class Detector_Controller:
         # 加载配置文件，模型名称
         self.config = config
         self.model_name = model_name
+
         # 通过模型名分别实例化不同的检测类
-        if self.model_name == "yolov5":
-            self.detector = Yolov5(self.config)
-        elif self.model_name == "yolov6":
-            self.detector = Yolov6(self.config)
-        elif self.model_name == "yolov7":
-            self.detector = Yolov7(self.config)
+        match self.model_name:
+            case "yolov5":
+                self.detector = Yolov5(self.config)
+            case "yolov6":
+                self.detector = Yolov6(self.config)
+            case "yolov7":
+                self.detector = Yolov7(self.config)
+            case _:
+                raise NameError("This detector is not yet supported")
 
     # 直接得到模型检测网络输出的tensor数据
     def run(self, image, nms=False):
