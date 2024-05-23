@@ -17,7 +17,7 @@ def dataset_cleaning():
 
     detector = Detector_Controller(config, "yolov5")
     rd = Renderer(config)
-    dataset = Dataset(config)
+    dataset = Dataset(config, config.dataset_path)
 
     mesh = Mesh(config).item()
     count = 0
