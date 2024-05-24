@@ -26,9 +26,10 @@
    
    conda install -c fvcore -c iopath -c conda-forge fvcore iopath # 安装pytorch3d依赖包
    
-   pip install --upgrade iopath==0.1.10# 托管在conda云上的 0.1.9 iopath存在bug # 需要使用pip安装0.1.10的iopath
-   
    conda install pytorch3d -c pytorch3d # 安装pytorch3d
+
+   
+   pip install --upgrade iopath==0.1.10# 托管在conda云上的 0.1.9 iopath存在bug # 需要使用pip安装0.1.10的iopath
    ```
 3. 使用git克隆本项目，或者在当前页面直接下载zip文件
     ```shell
