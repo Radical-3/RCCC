@@ -18,7 +18,6 @@
    
     git clone
    
-    pip install -r requirements/base_requirements.txt
     ```
 2. 项目基于pytorch3d 0.7.5版本开发，需要在安装依赖的情况后，再次安装pytorch和pytorch3d
    ```shell
@@ -28,16 +27,17 @@
    
    conda install pytorch3d -c pytorch3d # 安装pytorch3d
 
-   
    pip install --upgrade iopath==0.1.10# 托管在conda云上的 0.1.9 iopath存在bug # 需要使用pip安装0.1.10的iopath
    ```
 3. 使用git克隆本项目，或者在当前页面直接下载zip文件
     ```shell
     git clone
     ```
-4. 对于不同识别算法需要安装不同的依赖包，如YOLOv5需要安装如下依赖包
+4. 对于不同识别算法需要安装不同的依赖包，如YOLOv5需要安装yolov5中的依赖包
     ```shell
-    pip install -r requirements/requirements_yolov5.txt
+    pip install -r requirements.txt
+    
+    pip install -r detector/neural_networks/yolov5/requirements.txt
     ```
 
 ## Usage
