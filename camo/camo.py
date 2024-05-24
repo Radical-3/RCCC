@@ -24,7 +24,7 @@ class Camo:
         self.__camo.data.clamp_(0, 1)
 
     def load_camo(self):
-        self.__camo = torch.load(self.__config.save_camo_pth_path)
+        self.__camo = torch.load(self.__config.save_camo_pth_path).to(self.__device)
 
     def load_mask(self):
         camo_mask = torch.zeros(self.__camo.shape, device=self.__device)
