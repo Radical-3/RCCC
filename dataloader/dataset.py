@@ -2,6 +2,7 @@ import os
 import numpy
 from torch.utils.data import Dataset as torch_dataset
 from torch.utils.data import DataLoader as torch_dataloader
+from tqdm import tqdm
 
 from .dataset_produce import Dataset_Produce
 
@@ -28,31 +29,44 @@ class Dataset(torch_dataset):
         self.__local_filename(self.__dataset_path)
         self.__dataset_size = len(self.__data_labels) if self.__load_all else self.__config.dataset_size
 
+        if self.__load_all:
+            self.__dataset_iterator = self.__local_data(self.__dataset_path, self.__dataset_size)
+            self.__dataloader(self.__dataset_iterator, self.__config)
+
     def __len__(self):
         return len(self.__data_labels)
 
     def __iter__(self):
-        self.__dataset_iterator = self.__local_data(self.__dataset_path, self.__dataset_size)
-        self.__dataloader(self.__dataset_iterator, self.__config)
         self.__index = 0
+        if not self.__load_all:
+            self.__dataset_iterator = self.__local_data(self.__dataset_path, self.__dataset_size)
+            self.__dataloader(self.__dataset_iterator, self.__config)
         return self
 
     def __next__(self):
-        if self.__index == self.__dataset_size - 1:
-            try:
-                result = self.__data[self.__index]
-                self.__index = 0
-                self.__dataloader(self.__dataset_iterator, self.__config)
-                return result
-            except (IndexError, TypeError):
-                raise StopIteration
-        else:
+        if self.__load_all:
             try:
                 result = self.__data[self.__index]
                 self.__index += 1
                 return result
             except (IndexError, TypeError):
                 raise StopIteration
+        else:
+            if self.__index == self.__dataset_size - 1:
+                try:
+                    result = self.__data[self.__index]
+                    self.__index = 0
+                    self.__dataloader(self.__dataset_iterator, self.__config)
+                    return result
+                except (IndexError, TypeError):
+                    raise StopIteration
+            else:
+                try:
+                    result = self.__data[self.__index]
+                    self.__index += 1
+                    return result
+                except (IndexError, TypeError):
+                    raise StopIteration
 
     def __local_filename(self, path):
         # 初始化数据的标签列表
@@ -78,6 +92,8 @@ class Dataset(torch_dataset):
             except IndexError:
                 select_labels = self.__data_labels[(load_size * count):]
             if len(select_labels) > 0:
+                if self.__load_all:
+                    select_labels = tqdm(select_labels, desc="Loading all data")
                 for data_label in select_labels:
                     data = numpy.load(os.path.join(path, data_label + self.__suffix_name), allow_pickle=True)
                     dataset = numpy.vstack((dataset, data)) if dataset is not None else data
