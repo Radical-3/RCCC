@@ -12,39 +12,38 @@
 
 ## Installation
 
-1. 本项目基于Python3.10.14开发,使用git克隆本项目，或者在当前页面直接下载zip文件
+1. 本项目基于Python3.10.14开发,运行本项目前请确认使用的python版本
     ```shell
     python --version
-   
-    git clone
-   
     ```
-2. 项目基于pytorch3d 0.7.5版本开发，需要在安装依赖的情况后，再次安装pytorch和pytorch3d
+2. 项目基于pytorch3d 0.7.5版本开发，需要在安装依赖前，独立安装pytorch和pytorch3d
    ```shell
    conda install pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=12.1 -c pytorch -c nvidia # 安装pytorch2.1.0版本
    
    conda install -c fvcore -c iopath -c conda-forge fvcore iopath # 安装pytorch3d依赖包
    
    conda install pytorch3d -c pytorch3d # 安装pytorch3d
-
-   pip install --upgrade iopath==0.1.10# 托管在conda云上的 0.1.9 iopath存在bug # 需要使用pip安装0.1.10的iopath
+   
+   # 托管在conda云上的 0.1.9 iopath存在bug, 需要使用pip安装0.1.10的iopath。此命令运行后需要确认依赖的iopath版本为0.1.10，而非0.1.9
+   pip install --upgrade iopath==0.1.10
    ```
 3. 使用git克隆本项目，或者在当前页面直接下载zip文件
     ```shell
     git clone
     ```
-4. 对于不同识别算法需要安装不同的依赖包，如YOLOv5需要安装yolov5中的依赖包
+4. 安装项目的总依赖包，对于不同识别算法需要安装不同的依赖包，如YOLOv5需要安装yolov5中的依赖包
     ```shell
     pip install -r requirements.txt
-    
+   
+    # 此项为额外安装, 安装yolov5所需要的依赖包
     pip install -r detector/neural_networks/yolov5/requirements.txt
     ```
 
 ## Usage
 
-1. 生成伪装迷彩涂装
+1. 项目中的方法已经集成到method包中，通过对外暴露接口`test_script.py`统一调用。
     ```shell
-    python test.py
+    python test_script.py
     ```
 2. 修改配置文件`base.yaml`中可以直接改变生成的伪装迷彩涂装的参数
    例如：
