@@ -13,7 +13,7 @@ file_log_path: ./log/operating.log
 # Mesh -------------------------------------------------------------------------
 model_path: data/three_dimensional_model/audi_etron/audi_etron.obj
 face_path: data/three_dimensional_model/audi_etron/merged_output.txt
-texture_size: 10
+texture_size: 30
 texture_map_save_path: ./output
 
 # Render -----------------------------------------------------------------------
@@ -71,10 +71,10 @@ cleaning: True
 cleaning_result_path: "output/cleaning_result.txt"
 
 # train --------------------------------------------------------------
-train_dataset_path: data/dataset/package
-epochs: 2
+train_dataset_path: data/dataset/package/train
+epochs:
 batch_size: 1
-lr: 0.03
+lr: 0.01
 add_brightness: True
 min_brightness: -0.2
 max_brightness: 0.2
@@ -82,13 +82,13 @@ add_contrast: True
 min_contrast: 0.8
 max_contrast: 1.2
 add_noise: True
-noise_intensity: 0.1
+noise_intensity: 0.2
 mps_weight: 1000
 tv_weight: 25
-save_camo_to_pth: False
+save_camo_to_pth: True
 save_camo_pth_path: "output/final_camo.pth"
 save_camo_to_png: True
 
 # test --------------------------------------------------------------
-test_dataset_path: data/dataset/radius_7/test
+test_dataset_path: data/dataset/package
 test_result_path: "output/test"
