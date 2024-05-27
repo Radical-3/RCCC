@@ -19,7 +19,7 @@ from utils import convert_to_numpy
 def test_camouflage():
     config = Config(logger, './config/base.yaml').item()
     logger.set_config(config)
-    detector = Detector_Controller(config, "yolov5")
+    detector = Detector_Controller(config)
 
     dataset = Dataset(config, config.test_dataset_path)
     rd = Renderer(config)

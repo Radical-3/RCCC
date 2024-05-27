@@ -9,13 +9,12 @@ from detector.yolov7 import Yolov7
 
 class Detector_Controller:
     # 初始化函数
-    def __init__(self, config, model_name):
+    def __init__(self, config):
         # 加载配置文件，模型名称
         self.config = config
-        self.model_name = model_name
 
         # 通过模型名分别实例化不同的检测类
-        match self.model_name:
+        match self.config.detector:
             case "yolov5":
                 self.detector = Yolov5(self.config)
             case "yolov6":

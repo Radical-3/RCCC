@@ -15,7 +15,7 @@ def dataset_cleaning():
     config = Config(logger, './config/base.yaml').item()
     logger.set_config(config)
 
-    detector = Detector_Controller(config, "yolov5")
+    detector = Detector_Controller(config)
     rd = Renderer(config)
     dataset = Dataset(config, config.dataset_path)
 

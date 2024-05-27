@@ -17,7 +17,7 @@ from loss import Loss, transform
 def training_camouflage():
     config = Config(logger, './config/base.yaml').item()
     logger.set_config(config)
-    detector = Detector_Controller(config, "yolov5")
+    detector = Detector_Controller(config)
     loss = Loss(config, detector)
 
     dataset = Dataset(config, config.train_dataset_path)
