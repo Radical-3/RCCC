@@ -5,6 +5,6 @@ pytorch3d~=0.7.5
 tqdm~=4.66.4
 torch~=2.1.0
 torchvision~=0.16.0
-imageio~=2.33.1
+imageio~=2.34.1
 iopath==0.1.10
 
