@@ -36,11 +36,12 @@ def dataset_cleaning():
                     image_without_background = rd.render(mesh)
 
                     image = image_without_background * mask + background * (1 - mask)
+                    result_background = detector.run(background, nms=True)
                     result = detector.run(image, nms=True)
 
-                    if len(result) != 1:
+                    if len(result) != 1 or len(result_background) != 1:
                         is_garbage = True
-                    elif result[0][4] < config.clean_conf_threshold:
+                    elif result[0][4] < config.clean_conf_threshold or result_background[0][4] < config.clean_conf_threshold:
                         is_garbage = True
                     elif len(data[3][0]) < 1:
                         is_garbage = True
