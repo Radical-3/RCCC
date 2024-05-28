@@ -22,7 +22,7 @@ def test_camouflage():
     detector = Detector_Controller(config)
 
     dataset = Dataset(config, config.test_dataset_path)
-    rd = Renderer(config)
+    renderer = Renderer(config)
     mesh = Mesh(config)
     mesh_with_camo = Mesh(config)
 
@@ -31,8 +31,8 @@ def test_camouflage():
     camo.load_mask()
     mesh_with_camo.set_camo(camo)
 
-    mesh = mesh.item()
-    mesh_with_camo = mesh_with_camo.item()
+    mesh = mesh
+    mesh_with_camo = mesh_with_camo
 
     os.makedirs(config.test_result_path, exist_ok=True)
     with torch.no_grad():
@@ -42,9 +42,9 @@ def test_camouflage():
                 background = data[1].to(config.device).to(torch.float32) / 255
                 mask = data[2].to(config.device).to(torch.float32)
 
-                rd.set_camera_position(dist, elev, azim)
-                image_without_background = rd.render(mesh)
-                image_without_background_with_camo = rd.render(mesh_with_camo)
+                renderer.set_camera_position(dist, elev, azim)
+                image_without_background = renderer.render(mesh.item())
+                image_without_background_with_camo = renderer.render(mesh_with_camo.item())
 
                 image = image_without_background * mask + background * (1 - mask)
                 image_with_camo = image_without_background_with_camo * mask + background * (1 - mask)

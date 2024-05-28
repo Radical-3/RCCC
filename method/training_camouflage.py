@@ -21,9 +21,9 @@ def training_camouflage():
     loss = Loss(config, detector)
 
     dataset = Dataset(config, config.train_dataset_path)
-    rd = Renderer(config)
-    ms = Mesh(config)
-    camo = Camo(config, ms.shape())
+    renderer = Renderer(config)
+    mesh = Mesh(config)
+    camo = Camo(config, mesh.shape())
 
     camo.load_mask()
     camo.requires_grad(True)
@@ -34,15 +34,14 @@ def training_camouflage():
 
         with tqdm(dataset, desc=f"Epoch:{epoch}") as pbar:
             for data in pbar:
-                ms.set_camo(camo)
-                mesh = ms.item()
+                mesh.set_camo(camo)
 
                 dist, elev, azim = data[4][0, :].float()
                 background = data[1].to(config.device).to(torch.float32) / 255
                 mask = data[2].to(config.device).to(torch.float32)
 
-                rd.set_camera_position(dist, elev, azim)
-                image_without_background = rd.render(mesh)
+                renderer.set_camera_position(dist, elev, azim)
+                image_without_background = renderer.render(mesh.item())
                 image_backup = image_without_background.clone().to(config.device)
 
                 image_without_background = transform(config, image_without_background)
@@ -65,5 +64,5 @@ def training_camouflage():
         camo.save_camo_pth()
 
     if config.save_camo_to_png:
-        ms.set_camo(camo)
-        ms.make_texture_map_from_atlas()
+        mesh.set_camo(camo)
+        mesh.make_texture_map_from_atlas()
