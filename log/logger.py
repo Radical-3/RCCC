@@ -12,6 +12,7 @@ class Logger:
         self.__logger.addHandler(self.__default_handler)
 
     def set_config(self, config):
+        self.__logger.propagate = False
         self.__default_handler.close()
         self.__logger.removeHandler(self.__default_handler)
 
