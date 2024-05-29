@@ -56,7 +56,7 @@ class Yolov8(Detector):
             "postprocess": profilers[2].dt * 1e3,
         }
 
-        if self.verbose:
+        if self.__verbose:
             box_details_list = []
             for i in range(pred.shape[0]):
                 box_details = [
