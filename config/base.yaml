@@ -14,7 +14,7 @@ file_log_path: ./log/operating.log
 # Mesh -------------------------------------------------------------------------
 model_path: data/three_dimensional_model/audi_etron/audi_etron.obj
 face_path: data/three_dimensional_model/audi_etron/merged_output.txt
-texture_size: 30
+texture_size: 10
 texture_map_save_path: ./output
 
 # Render -----------------------------------------------------------------------
@@ -63,7 +63,9 @@ yaml: detector/neural_networks/yolov6/data/coco.yaml
 half: False
 # yolov7
 yolov7_weights: "detector/neural_networks/neural_network_model_weights/yolov7.pt"
-
+#yolov8
+yolov8_weights: "detector/neural_networks/neural_network_model_weights/yolov8x.pt"
+verbose: True
 # clean --------------------------------------------------------------
 cleaning_dataset_path: data/dataset/package
 clean_conf_threshold: 0.25
@@ -72,8 +74,8 @@ cleaning: True
 cleaning_result_path: "output/cleaning_result.txt"
 
 # train --------------------------------------------------------------
-train_dataset_path: data/dataset/package/train
-epochs:
+train_dataset_path: data/dataset/default/package
+epochs: 10
 batch_size: 1
 lr: 0.01
 add_brightness: True
