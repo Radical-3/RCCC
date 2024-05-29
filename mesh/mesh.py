@@ -1,3 +1,4 @@
+import os.path
 import warnings
 
 import cv2
@@ -96,7 +97,8 @@ class Mesh:
                         cv2.fillConvexPoly(image, uv_pos[F, R1, R2], texture[F, R1, R2].tolist())
         image = np.flip(image, axis=0).astype(np.uint8)
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        cv2.imwrite(f"{self.__config.texture_map_save_path}/{name}_base_color.png", image)
+        cv2.imwrite(os.path.join(self.__config.texture_map_save_path, f"{name}_base_color.png"), image)
+        logger.info(f"save the {name}_base_color as the 'png' in {self.__config.texture_map_save_path}")
 
     def calculate_coordinate_bias(self):
         correctness = [True]

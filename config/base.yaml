@@ -33,7 +33,6 @@ z_clip_value:
 cull_to_frustum: False
 
 # dataset -------------------------------------------------------------------
-dataset_path: data/dataset/package
 dataset_size: 1
 all_dataset: True
 
@@ -66,6 +65,7 @@ half: False
 yolov7_weights: "detector/neural_networks/neural_network_model_weights/yolov7.pt"
 
 # clean --------------------------------------------------------------
+cleaning_dataset_path: data/dataset/package
 clean_conf_threshold: 0.25
 clean_iou_threshold: 0.45
 cleaning: True

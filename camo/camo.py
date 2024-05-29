@@ -1,6 +1,8 @@
 import numpy
 import torch
 
+from log import logger
+
 
 class Camo:
     def __init__(self, config, shape):
@@ -36,3 +38,4 @@ class Camo:
 
     def save_camo_pth(self):
         torch.save(self.__camo, self.__config.save_camo_pth_path)
+        logger.info(f"save the camo as the 'pth' in the {self.__config.save_camo_pth_path}")
