@@ -24,12 +24,12 @@ def dataset_cleaning():
         with open(config.cleaning_result_path, 'w+') as F:
             with tqdm(dataset, desc="Cleaning") as pbar:
                 for data in pbar:
-                    pbar.set_postfix(bad_samples=count)
                     if is_garbage_sample(data, config, detector, rd, mesh):
                         filename = f"{int(data[0].item())}.npy"
                         F.write(filename + '\n')
                         count += 1
                         if config.cleaning:
-                            filepath = os.path.join(config.dataset_path, filename)
+                            filepath = os.path.join(config.cleaning_dataset_path, filename)
                             os.remove(filepath)
+                    pbar.set_postfix(bad_samples=count)
     logger.info(f"The cleaning is complete. A total of {count} samples were cleaned")
