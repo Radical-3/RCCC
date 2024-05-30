@@ -2,6 +2,7 @@ from detector.yolov5 import Yolov5
 from detector.yolov6 import Yolov6
 from detector.yolov7 import Yolov7
 from detector.yolov8 import Yolov8
+from detector.yolov9 import Yolov9
 
 '''
     本模块用于对检测模型的调用，通过输入模型名字，输出对应模型的检测结果
@@ -24,6 +25,8 @@ class Detector_Controller:
                 self.detector = Yolov7(self.config)
             case "yolov8":
                 self.detector = Yolov8(self.config)
+            case "yolov9":
+                self.detector = Yolov9(self.config)
             case _:
                 raise NameError("This detector is not yet supported")
 
