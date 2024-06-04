@@ -9,6 +9,8 @@
 - [x] YOLOv5
 - [x] YOLOv6
 - [x] YOLOv7
+- [x] YOLOv8
+- [x] YOLOv9
 
 ## Installation
 
