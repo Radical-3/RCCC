@@ -57,7 +57,7 @@
 本项目由[@黑羽彻](https://github.com/ZhaoZhiqiao)
 开发维护, [@Caesar545](https://github.com/Caesar545)、[@He Fasheng](https://github.com/clown001)负责注释和文档编写。  
 若项目存在任何问题，欢迎提交issue或者pull request，也可以直接通过邮箱联系[@黑羽彻](https://github.com/ZhaoZhiqiao):
-zhao_zhiqiao@outlook.com。
+zhaozhiqiao.work@gmail.com。
 
 ## License
 
