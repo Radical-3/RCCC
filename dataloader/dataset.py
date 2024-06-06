@@ -113,7 +113,7 @@ class Dataset(torch_dataset):
     def __dataloader(self, dataset_iterator, config):
         self.__next_dataset(dataset_iterator)
         if self.__dataset is not None:
-            self.__dataloader_item = torch_dataloader(self.__dataset, batch_size=config.batch_size)
+            self.__dataloader_item = torch_dataloader(self.__dataset, batch_size=config.batch_size, shuffle=True)
             self.__data = list(self.__dataloader_item)
         else:
             self.__data = None
