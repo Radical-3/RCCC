@@ -163,9 +163,13 @@ cython_debug/
 output/*
 !output/readme.md
 
-# Dataset for train and test
+# Dataset for train
 data/dataset/*
 !data/dataset/readme.md
+
+# camo for continue train
+data/camo/*
+!data/camo/readme.md
 
 # Three_dimensional_model for neural runder
 data/three_dimensional_model/*
@@ -174,7 +178,6 @@ data/three_dimensional_model/*
 # Weights of different neural networks
 detector/neural_networks/*
 !detector/neural_networks/readme.md
-
 
 # Weights of different neural networks
 detector/neural_networks/neural_network_model_weights/*

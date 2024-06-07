@@ -57,31 +57,33 @@ save_img: True
 only_objectness: False
 train_classes: 2
 # yolov5
-yolov5_weights: "detector/neural_networks/neural_network_model_weights/yolov5x6.pt"
+yolov5_weights: detector/neural_networks/neural_network_model_weights/yolov5x6.pt
 # yolov6
-yolov6_weights: "detector/neural_networks/neural_network_model_weights/yolov6m.pt"
+yolov6_weights: detector/neural_networks/neural_network_model_weights/yolov6m.pt
 yaml: detector/neural_networks/yolov6/data/coco.yaml
 half: False
 # yolov7
-yolov7_weights: "detector/neural_networks/neural_network_model_weights/yolov7.pt"
+yolov7_weights: detector/neural_networks/neural_network_model_weights/yolov7.pt
 #yolov8
-yolov8_weights: "detector/neural_networks/neural_network_model_weights/yolov8x.pt"
+yolov8_weights: detector/neural_networks/neural_network_model_weights/yolov8x.pt
 verbose: True
 # yolov9
-yolov9_weights: "detector/neural_networks/neural_network_model_weights/yolov9-e-converted.pt"
+yolov9_weights: detector/neural_networks/neural_network_model_weights/yolov9-e-converted.pt
 
 # clean --------------------------------------------------------------
 cleaning_dataset_path: data/dataset/
 clean_conf_threshold: 0.25
 clean_iou_threshold: 0.45
 cleaning: True
-cleaning_result_path: "output/cleaning_result.txt"
+cleaning_result_path: output/cleaning_result.txt
 
 # train --------------------------------------------------------------
+continue_train: True
+camo_pth_path: data/camo/final_camo.pth
 train_dataset_path: data/dataset/10m/train
-epochs: 150
+epochs: 240
 batch_size: 1
-lr: 0.01
+lr: 1e-7
 add_brightness: True
 min_brightness: -0.2
 max_brightness: 0.2
@@ -90,12 +92,12 @@ min_contrast: 0.8
 max_contrast: 1.2
 add_noise: True
 noise_intensity: 0.2
-mps_weight: 100
-tv_weight: 4
+mps_weight: 1000
+tv_weight: 20
 save_camo_to_pth: True
-save_camo_pth_path: "output/final_camo.pth"
+save_camo_pth_path: output/final_camo.pth
 save_camo_to_png: True
 
 # test --------------------------------------------------------------
 test_dataset_path: data/dataset/package
-test_result_path: "output/test"
+test_result_path: output/test
