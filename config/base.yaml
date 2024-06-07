@@ -1,6 +1,6 @@
 # Common -----------------------------------------------------------------------
 use_cuda: True
-device: "cuda:0"
+device: "cuda:1"
 detector: yolov5
 
 # log -----------------------------------------------------------------------
@@ -14,7 +14,7 @@ file_log_path: ./log/operating.log
 # Mesh -------------------------------------------------------------------------
 model_path: data/three_dimensional_model/audi_etron/audi_etron.obj
 face_path: data/three_dimensional_model/audi_etron/merged_output.txt
-texture_size: 10
+texture_size: 70
 texture_map_save_path: ./output
 
 # Render -----------------------------------------------------------------------
@@ -35,6 +35,7 @@ cull_to_frustum: False
 # dataset -------------------------------------------------------------------
 dataset_size: 1
 all_dataset: True
+shuffle: True
 
 # Detector -------------------------------------------------------------------
 img_sz: [1152,1152]
@@ -70,15 +71,15 @@ verbose: True
 yolov9_weights: "detector/neural_networks/neural_network_model_weights/yolov9-e-converted.pt"
 
 # clean --------------------------------------------------------------
-cleaning_dataset_path: data/dataset/package
+cleaning_dataset_path: data/dataset/
 clean_conf_threshold: 0.25
 clean_iou_threshold: 0.45
 cleaning: True
 cleaning_result_path: "output/cleaning_result.txt"
 
 # train --------------------------------------------------------------
-train_dataset_path: data/dataset/default/package
-epochs: 10
+train_dataset_path: data/dataset/10m/train
+epochs: 150
 batch_size: 1
 lr: 0.01
 add_brightness: True
@@ -89,8 +90,8 @@ min_contrast: 0.8
 max_contrast: 1.2
 add_noise: True
 noise_intensity: 0.2
-mps_weight: 1000
-tv_weight: 25
+mps_weight: 100
+tv_weight: 4
 save_camo_to_pth: True
 save_camo_pth_path: "output/final_camo.pth"
 save_camo_to_png: True
