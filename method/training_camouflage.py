@@ -26,8 +26,10 @@ def training_camouflage():
     camo = Camo(config, mesh.shape())
 
     camo.load_mask()
+    if config.camo_pth_path:
+        camo.load_camo()
     camo.requires_grad(True)
-    optimizer = optim.Adam([camo.item()], lr=config.lr, amsgrad=True)
+    optimizer = optim.Adam([camo.item()], lr=float(config.lr), amsgrad=True)
 
     for epoch in range(config.epochs):
         total_loss = list()
