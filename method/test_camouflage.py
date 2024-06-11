@@ -31,9 +31,6 @@ def test_camouflage():
     camo.load_mask()
     mesh_with_camo.set_camo(camo)
 
-    mesh = mesh
-    mesh_with_camo = mesh_with_camo
-
     os.makedirs(config.test_result_path, exist_ok=True)
     with torch.no_grad():
         with tqdm(dataset, desc=f"test") as pbar:
@@ -62,10 +59,10 @@ def test_camouflage():
             images = list()
             with tqdm(np.linspace(0, 360, 360), desc=f"rotation gif({elev:.1f})") as pbar:
                 for azim in pbar:
-                    rd.set_camera_position(dist=6, elev=elev, azim=azim)
+                    renderer.set_camera_position(dist=6, elev=elev, azim=azim)
 
-                    image = rd.render(mesh)
-                    image_with_camo = rd.render(mesh_with_camo)
+                    image = renderer.render(mesh.item())
+                    image_with_camo = renderer.render(mesh_with_camo.item() )
 
                     image = convert_to_numpy(image)
                     image_with_camo = convert_to_numpy(image_with_camo)
