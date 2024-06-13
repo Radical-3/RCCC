@@ -1,8 +1,4 @@
-from detector.yolov5 import Yolov5
-from detector.yolov6 import Yolov6
-from detector.yolov7 import Yolov7
-from detector.yolov8 import Yolov8
-from detector.yolov9 import Yolov9
+from log import logger
 
 '''
     本模块用于对检测模型的调用，通过输入模型名字，输出对应模型的检测结果
@@ -13,22 +9,27 @@ class Detector_Controller:
     # 初始化函数
     def __init__(self, config):
         # 加载配置文件，模型名称
-        self.config = config
-
+        self.__config = config
         # 通过模型名分别实例化不同的检测类
-        match self.config.detector:
+        match self.__config.detector:
             case "yolov5":
-                self.detector = Yolov5(self.config)
+                from detector.yolov5 import Yolov5
+                self.detector = Yolov5(self.__config)
             case "yolov6":
-                self.detector = Yolov6(self.config)
+                from detector.yolov6 import Yolov6
+                self.detector = Yolov6(self.__config)
             case "yolov7":
-                self.detector = Yolov7(self.config)
+                from detector.yolov7 import Yolov7
+                self.detector = Yolov7(self.__config)
             case "yolov8":
-                self.detector = Yolov8(self.config)
+                from detector.yolov8 import Yolov8
+                self.detector = Yolov8(self.__config)
             case "yolov9":
-                self.detector = Yolov9(self.config)
+                from detector.yolov9 import Yolov9
+                self.detector = Yolov9(self.__config)
             case _:
                 raise NameError("This detector is not yet supported")
+        logger.info(f"the detector controller is using {self.__config.detector}")
 
     # 直接得到模型检测网络输出的tensor数据
     def run(self, image, nms=False):

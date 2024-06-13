@@ -26,7 +26,7 @@ def training_camouflage():
     camo = Camo(config, mesh.shape())
 
     camo.load_mask()
-    if config.camo_pth_path:
+    if config.continue_train:
         camo.load_camo()
     camo.requires_grad(True)
     optimizer = optim.Adam([camo.item()], lr=float(config.lr), amsgrad=True)
@@ -34,7 +34,7 @@ def training_camouflage():
     for epoch in range(config.epochs):
         total_loss = list()
 
-        with tqdm(dataset, desc=f"Epoch:{epoch}") as pbar:
+        with tqdm(dataset, desc=f"Epoch:{epoch}/{config.epochs}", ncols=200) as pbar:
             for data in pbar:
                 mesh.set_camo(camo)
 
@@ -60,7 +60,8 @@ def training_camouflage():
                 optimizer.step()
                 optimizer.zero_grad()
                 camo.clamp()
-                pbar.set_postfix(total_loss=np.mean(total_loss), loss=loss_value.item())
+
+                pbar.set_postfix(total_loss=f"{np.mean(total_loss):.3f}", loss=f"{loss_value.item():.3f}")
 
     if config.save_camo_to_pth:
         camo.save_camo_pth()
