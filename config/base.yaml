@@ -1,7 +1,7 @@
 # Common -----------------------------------------------------------------------
 use_cuda: True
 device: "cuda:1"
-detector: yolov5
+detector: yolov8
 
 # log -----------------------------------------------------------------------
 log_format: '%(asctime)s - %(levelname)s - %(message)s'
@@ -14,7 +14,7 @@ file_log_path: ./log/operating.log
 # Mesh -------------------------------------------------------------------------
 model_path: data/three_dimensional_model/audi_etron/audi_etron.obj
 face_path: data/three_dimensional_model/audi_etron/merged_output.txt
-texture_size: 70
+texture_size: 50
 texture_map_save_path: ./output
 
 # Render -----------------------------------------------------------------------
@@ -78,12 +78,12 @@ cleaning: True
 cleaning_result_path: output/cleaning_result.txt
 
 # train --------------------------------------------------------------
-continue_train: True
+continue_train: False
 camo_pth_path: data/camo/final_camo.pth
 train_dataset_path: data/dataset/10m/train
-epochs: 240
+epochs: 300
 batch_size: 1
-lr: 1e-7
+lr: 0.01
 add_brightness: True
 min_brightness: -0.2
 max_brightness: 0.2
@@ -93,11 +93,11 @@ max_contrast: 1.2
 add_noise: True
 noise_intensity: 0.2
 mps_weight: 1000
-tv_weight: 20
+tv_weight: 5
 save_camo_to_pth: True
-save_camo_pth_path: output/final_camo.pth
+save_camo_pth_path: output/camo—yolov8-50.pth
 save_camo_to_png: True
 
 # test --------------------------------------------------------------
-test_dataset_path: data/dataset/package
+test_dataset_path: data/dataset/10m/extend
 test_result_path: output/test

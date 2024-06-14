@@ -93,10 +93,10 @@ class Dataset(torch_dataset):
                 select_labels = self.__data_labels[(load_size * count):]
             if len(select_labels) > 0:
                 if self.__load_all:
-                    select_labels = tqdm(select_labels, desc="Loading all data")
-                for data_label in select_labels:
-                    data = numpy.load(os.path.join(path, data_label + self.__suffix_name), allow_pickle=True)
-                    dataset = numpy.vstack((dataset, data)) if dataset is not None else data
+                    with tqdm(select_labels, desc="Loading all data", ncols=200) as pbar:
+                        for data_label in pbar:
+                            data = numpy.load(os.path.join(path, data_label + self.__suffix_name), allow_pickle=True)
+                            dataset = numpy.vstack((dataset, data)) if dataset is not None else data
             count = count + 1
             yield dataset
 
