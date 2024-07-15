@@ -1,5 +1,8 @@
+import os
+
 import numpy as np
 import torch
+import yaml
 
 from torch import optim
 from tqdm import tqdm
@@ -63,9 +66,25 @@ def training_camouflage():
 
                 pbar.set_postfix(total_loss=f"{np.mean(total_loss):.3f}", loss=f"{loss_value.item():.3f}")
 
-    if config.save_camo_to_pth:
-        camo.save_camo_pth()
+    if config.enable_save:
+        save_path = os.path.join("output", config.save_folder)
+        logger.info(f"save the result to {save_path}")
 
-    if config.save_camo_to_png:
-        mesh.set_camo(camo)
-        mesh.make_texture_map_from_atlas()
+        count = 1
+        while os.path.exists(save_path + f"_{count}"):
+            count += 1
+        save_path = save_path + f"_{count}"
+        os.makedirs(save_path)
+
+        if config.save_camo_to_pth:
+            camo.save_camo_pth(save_path)
+
+        if config.save_camo_to_png:
+            mesh.set_camo(camo)
+            mesh.make_texture_map_from_atlas(save_path)
+
+        if config.save_config:
+            with open(os.path.join(save_path, config.save_config_name), 'w') as file:
+                yaml.dump(config.__dict__, file, default_flow_style=False, allow_unicode=True, default_style='"',
+                          sort_keys=False)
+            logger.info(f"save the config as the 'yaml' in {save_path}")

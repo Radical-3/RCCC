@@ -1,3 +1,5 @@
+import os.path
+
 import numpy
 import torch
 
@@ -37,6 +39,7 @@ class Camo:
             camo_mask[int(face_id), :, :, :] = 1
         self.__camo_mask = camo_mask
 
-    def save_camo_pth(self):
-        torch.save(self.__camo, self.__config.save_camo_pth_path)
-        logger.info(f"save the camo as the 'pth' in the {self.__config.save_camo_pth_path}")
+    def save_camo_pth(self, save_path):
+        save_path = str(save_path)
+        torch.save(self.__camo, os.path.join(save_path, self.__config.save_camo_pth_name))
+        logger.info(f"save the camo as the 'pth' in the {save_path}")
