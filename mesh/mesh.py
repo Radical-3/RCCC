@@ -17,6 +17,25 @@ from utils import remove_alpha
 '''
 
 
+def create_texture_map(uv_pos, texture, image, name, save_path):
+    w, h = image.shape[0:2]
+    uv_pos[..., 0] = (uv_pos[..., 0] * h).round()
+    uv_pos[..., 1] = (uv_pos[..., 1] * w).round()
+    uv_pos = uv_pos.detach().cpu().numpy().astype(np.int32)
+    texture = texture.mul(255).detach().cpu().numpy().round().astype(np.int32)
+    if h == 1 and w == 1 and len(np.unique(texture)) <= 3:
+        image[0, 0] = np.unique(texture)
+    else:
+        for F in range(uv_pos.shape[0]):
+            for R1 in range(uv_pos.shape[1]):
+                for R2 in range(uv_pos.shape[2]):
+                    cv2.fillConvexPoly(image, uv_pos[F, R1, R2], texture[F, R1, R2].tolist())
+    image = np.flip(image, axis=0).astype(np.uint8)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    cv2.imwrite(os.path.join(save_path, f"{name}_base_color.png"), image)
+    logger.info(f"save the {name}_base_color as the 'png' in {save_path}")
+
+
 class Mesh:
     # 类初始化函数
     def __init__(self, config):
@@ -62,9 +81,11 @@ class Mesh:
     def item(self):
         return Meshes(verts=[self.__vert], faces=[self.__faces.verts_idx], textures=TexturesAtlas(atlas=[self.__atlas]))
 
-    def make_texture_map_from_atlas(self):
+    def make_texture_map_from_atlas(self, save_path):
         self.__atlas = self.__atlas.detach()
         faces_verts_uvs = self.__aux.verts_uvs[self.__faces.textures_idx] if len(self.__aux.verts_uvs) > 0 else None
+        save_path = str(os.path.join(save_path, self.__config.save_camo_png_name))
+        os.makedirs(save_path)
         if faces_verts_uvs is None:
             logger.error("No UVs found in the mesh file")
             raise ValueError()
@@ -79,26 +100,7 @@ class Mesh:
             uvs_subset = faces_verts_uvs[faces_material_ind, :, :] % 1.0
             uvs_subset[uvs_subset > 1] = 0
             uv_pos = (uvs_subset[:, None, None, None] * self.__coordinate_bias[..., None]).sum(-2)
-            self.create_texture_map(uv_pos, texture, image, material_name)
-
-    def create_texture_map(self, uv_pos, texture, image, name):
-        w, h = image.shape[0:2]
-        uv_pos[..., 0] = (uv_pos[..., 0] * h).round()
-        uv_pos[..., 1] = (uv_pos[..., 1] * w).round()
-        uv_pos = uv_pos.detach().cpu().numpy().astype(np.int32)
-        texture = texture.mul(255).detach().cpu().numpy().round().astype(np.int32)
-
-        if h == 1 and w == 1 and len(np.unique(texture)) <= 3:
-            image[0, 0] = np.unique(texture)
-        else:
-            for F in range(uv_pos.shape[0]):
-                for R1 in range(uv_pos.shape[1]):
-                    for R2 in range(uv_pos.shape[2]):
-                        cv2.fillConvexPoly(image, uv_pos[F, R1, R2], texture[F, R1, R2].tolist())
-        image = np.flip(image, axis=0).astype(np.uint8)
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        cv2.imwrite(os.path.join(self.__config.texture_map_save_path, f"{name}_base_color.png"), image)
-        logger.info(f"save the {name}_base_color as the 'png' in {self.__config.texture_map_save_path}")
+            create_texture_map(uv_pos, texture, image, material_name, save_path)
 
     def calculate_coordinate_bias(self):
         correctness = [True]

@@ -31,7 +31,18 @@ def test_camouflage():
     camo.load_mask()
     mesh_with_camo.set_camo(camo)
 
-    os.makedirs(config.test_result_path, exist_ok=True)
+    # os.makedirs(config.test_result_path, exist_ok=True)
+    save_path = None
+    if config.enable_save:
+        save_path = os.path.join("output", config.save_folder)
+        logger.info(f"save the result to {save_path}")
+
+        count = 1
+        while os.path.exists(save_path + f"_{count}"):
+            count += 1
+        save_path = save_path + f"_{count}"
+        os.makedirs(save_path)
+
     with torch.no_grad():
         with tqdm(dataset, desc=f"test") as pbar:
             for data in pbar:
@@ -52,8 +63,7 @@ def test_camouflage():
                 result = list()
                 result.append(detector.detect(image)[0])
                 result.append(detector.detect(image_with_camo)[0])
-
-                cv2.imwrite(os.path.join(config.test_result_path, f"{data[0].item()}.png"), np.hstack(result))
+                cv2.imwrite(os.path.join(save_path, f"{data[0].item()}.png"), np.hstack(result))
 
         for elev in np.linspace(5, 75, 10):
             images = list()
@@ -62,7 +72,7 @@ def test_camouflage():
                     renderer.set_camera_position(dist=6, elev=elev, azim=azim)
 
                     image = renderer.render(mesh.item())
-                    image_with_camo = renderer.render(mesh_with_camo.item() )
+                    image_with_camo = renderer.render(mesh_with_camo.item())
 
                     image = convert_to_numpy(image)
                     image_with_camo = convert_to_numpy(image_with_camo)
@@ -73,9 +83,9 @@ def test_camouflage():
 
                     images.append(cv2.cvtColor(np.hstack(result), cv2.COLOR_BGR2RGB))
 
-            path = os.path.join(config.test_result_path, f"rotation_{elev:.1f}.gif")
-            logger.info(f"start drawing a gif to {path}")
+            path = os.path.join(save_path, f"rotation_{elev:.1f}.gif")
+            logger.info(f"start drawing a gif to {save_path}")
             with imageio.get_writer(path, mode='I', duration=0.01) as writer:
                 for img in images:
                     writer.append_data(img)
-            logger.info(f"finish drawing a gif to {path}")
+            logger.info(f"finish drawing a gif to {save_path}")
