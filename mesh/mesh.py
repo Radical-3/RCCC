@@ -121,6 +121,7 @@ class Mesh:
             slc = torch.arange(2, device=self.__device)[:, None]
             bary[0][below_diag, slc] = (grid[below_diag] / R).T
             bary[0][~below_diag, slc] = ((R - 1.0 - grid[~below_diag] + 1.0) / R).T
+            # bary[0][~below_diag, slc] = bary[0][~below_diag, slc].flip(0)
             bary[0][..., -1] = 1 - bary[0][..., :2].sum(dim=-1)
 
             bary.append(torch.zeros((R, R, 3), device=self.__device))
@@ -129,6 +130,7 @@ class Mesh:
                 ((R - 1.0 - grid[~below_diag][:, 0] + 1.0) / R, (R - 1.0 - grid[~below_diag][:, 1]) / R), dim=-1)
             bary[1][below_diag, slc] = grid_below_diag.T
             bary[1][~below_diag, slc] = grid_above_diag.T
+            # bary[1][~below_diag, slc] = bary[1][~below_diag, slc].flip(0)
             bary[1][..., -1] = 1 - bary[1][..., :2].sum(dim=-1)
 
             bary.append(torch.zeros((R, R, 3), device=self.__device))
@@ -137,5 +139,6 @@ class Mesh:
                 ((R - 1.0 - grid[~below_diag][:, 0]) / R, (R - 1.0 - grid[~below_diag][:, 1] + 1) / R), dim=-1)
             bary[2][below_diag, slc] = grid_below_diag.T
             bary[2][~below_diag, slc] = grid_above_diag.T
+            # bary[2][~below_diag, slc] = bary[2][~below_diag, slc].flip(0)
             bary[2][..., -1] = 1 - bary[2][..., :2].sum(dim=-1)
             self.__coordinate_bias = torch.stack(bary, dim=-2)

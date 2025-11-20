@@ -1,6 +1,6 @@
 # Common -----------------------------------------------------------------------
 use_cuda: True
-device: "cuda:1"
+device: "cuda:0"
 detector: yolov5
 
 # log -----------------------------------------------------------------------
@@ -33,7 +33,7 @@ z_clip_value:
 cull_to_frustum: False
 
 # dataset -------------------------------------------------------------------
-dataset_size: 1
+dataset_size: 10
 all_dataset: True
 shuffle: True
 
@@ -79,19 +79,19 @@ cleaning_result_path: output/cleaning_result.txt
 
 # train --------------------------------------------------------------
 continue_train: False
-camo_pth_path: data/camo/final_camo.pth
-train_dataset_path: data/dataset/10m/extend
-epochs: 0
+camo_pth_path: data/camo/camo-track-300.pth
+train_dataset_path: data/dataset/10m/train
+epochs: 300
 batch_size: 1
-lr: 0.01
+lr: 1e-10
 add_brightness: True
-min_brightness: -0.2
-max_brightness: 0.2
+min_brightness: -0.1
+max_brightness: 0.1
 add_contrast: True
 min_contrast: 0.8
 max_contrast: 1.2
 add_noise: True
-noise_intensity: 0.2
+noise_intensity: 0.1
 mps_weight: 1000
 tv_weight: 2
 
@@ -106,7 +106,40 @@ save_config: True
 save_config_name: base_config.yaml
 
 save_camo_to_pth: False
-save_camo_pth_name: camo—yolov5-50.pth
+save_camo_pth_name: camo-track-carla1-100.pth
 
 save_camo_to_png: False
-save_camo_png_name: sticker
+save_camo_png_name: tracker5-set_camo
+
+# ostracker----------------------------------------------------------
+tracker_name: ostrack
+tracker_param: vitb_256_mae_ce_32x4_ep300
+dataset_name: local_data_train
+run_id:
+sequence:
+debug: 0
+threads: 0
+num_gpus: 8
+got10k_path: /home/he/project_code/Recognition-Confuse-Camo-Coating/detector/neural_networks/track/OSTrack/data/got10k
+local_data_path: /home/he/project_code/Recognition-Confuse-Camo-Coating/detector/neural_networks/track/OSTrack/data/local_data
+network_path: /home/he/project_code/Recognition-Confuse-Camo-Coating/detector/neural_networks/track/OSTrack/output/test/networks
+results_path: /home/he/project_code/Recognition-Confuse-Camo-Coating/detector/neural_networks/track/OSTrack/output/test/tracking_results
+save_dir: /home/he/project_code/Recognition-Confuse-Camo-Coating/detector/neural_networks/track/OSTrack/output
+params:
+  template_size: 128
+  template_factor: 2
+  search_factor: 4
+  search_size: 256
+cfg:
+  MODEL:
+    BACKBONE:
+      CE_LOC: [2, 6, 9]
+mean: [0.485, 0.456, 0.406]
+std: [0.229, 0.224, 0.225]
+track_mps_weight: 7500
+loss_weight:
+  giou: 2.0
+  l1: 5.0
+  focal: 1.0
+search_size: 256
+backbone_stride: 16
