@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import torch
 from detector.neural_networks.track.OSTrack.lib.utils.box_ops import box_xywh_to_xyxy
@@ -108,6 +110,223 @@ class Loss:
         maximum_probability_score_loss = max_conf
         # return maximum_probability_score_loss * self.__config.track_mps_weight
         return maximum_probability_score_loss * self.__config.track_mps_weight
+
+    # 从干净搜索图像得到最大的k个和最小的k个得分的位置，然后抑制对抗搜索图像的大的k个位置的得分，增加小的k个位置的得分
+    def track_top_k_min_k_probability_score(self, result, top_k_pos, min_k_pos):
+        """
+        根据提供的最大和最小位置列表，计算对应得分的平均值，并返回它们的差值。
+
+        参数:
+            result (torch.Tensor): 原始的模型输出张量，形状为 [1, 1, 16, 16]。
+            top_k_pos (list): 包含最大 k 个元素位置的列表，每个位置是一个元组 (b, c, h, w)。
+            min_k_pos (list): 包含最小 k 个元素位置的列表，每个位置是一个元组 (b, c, h, w)。
+
+        返回:
+            torch.Tensor: 一个标量张量，表示 (最大位置得分的平均值) - (最小位置得分的平均值)。
+        """
+        # # 1. 将 result 展平，以便通过索引直接获取值
+        # # result 的形状是 [1, 1, 16, 16]，展平后变为 [1, 1, 256]
+        # flattened_result = result.view(1, 1, -1)
+        #
+        # # 2. 提取 top_k_pos 对应的得分并计算平均值（使用张量操作保持梯度）
+        # if len(top_k_pos) > 0:
+        #     # 构建索引张量
+        #     indices = []
+        #     for pos in top_k_pos:
+        #         b, c, h, w = pos
+        #         idx = h * result.shape[3] + w
+        #         indices.append(idx)
+        #
+        #     # 转换为张量并提取对应位置的值
+        #     indices_tensor = torch.tensor(indices, device=result.device, dtype=torch.long)
+        #     top_k_scores_tensor = flattened_result[0, 0, indices_tensor]
+        #     top_k_mean = top_k_scores_tensor.mean()
+        # else:
+        #     top_k_mean = torch.tensor(0.0, device=result.device)
+        #
+        # # 3. 提取 min_k_pos 对应的得分并计算平均值（使用张量操作保持梯度）
+        # if len(min_k_pos) > 0:
+        #     # 构建索引张量
+        #     indices = []
+        #     for pos in min_k_pos:
+        #         b, c, h, w = pos
+        #         idx = h * result.shape[3] + w
+        #         indices.append(idx)
+        #
+        #     # 转换为张量并提取对应位置的值
+        #     indices_tensor = torch.tensor(indices, device=result.device, dtype=torch.long)
+        #     min_k_scores_tensor = flattened_result[0, 0, indices_tensor]
+        #     min_k_mean = min_k_scores_tensor.mean()
+        # else:
+        #     min_k_mean = torch.tensor(0.0, device=result.device)
+        #
+        # # 4. 计算并返回差值 (大的平均值 - 小的平均值)
+        # # 添加平滑项防止log(0)导致的数值不稳定
+        # epsilon = 1e-8
+        # # 确保min_k_mean大于0，避免log(0)
+        # min_k_mean = torch.clamp(min_k_mean, min=epsilon)
+        # score_difference = top_k_mean * 10 - torch.log(min_k_mean)
+        #
+        # # 使用平滑的clamp替代硬性的max操作，确保梯度连续
+        # final_score = torch.clamp(score_difference, min=-10.0)
+        #
+        # return final_score
+        # 1. 将 result 展平，以便通过索引直接获取值
+        # result 的形状是 [1, 1, 16, 16]，展平后变为 [1, 1, 256]
+        flattened_result = result.view(1, 1, -1)
+
+        # 2. 提取 top_k_pos 对应的得分并计算平均值（使用张量操作保持梯度）
+        if len(top_k_pos) > 0:
+            # 构建索引张量
+            indices = []
+            for pos in top_k_pos:
+                b, c, h, w = pos
+                idx = h * result.shape[3] + w
+                indices.append(idx)
+
+            # 转换为张量并提取对应位置的值
+            indices_tensor = torch.tensor(indices, device=result.device, dtype=torch.long)
+            top_k_scores_tensor = flattened_result[0, 0, indices_tensor]
+            top_k_mean = top_k_scores_tensor.mean()
+        else:
+            top_k_mean = torch.tensor(0.0, device=result.device)
+
+        # 3. 提取 min_k_pos 对应的得分并计算平均值（使用张量操作保持梯度）
+        if len(min_k_pos) > 0:
+            # 构建索引张量
+            indices = []
+            for pos in min_k_pos:
+                b, c, h, w = pos
+                idx = h * result.shape[3] + w
+                indices.append(idx)
+
+            # 转换为张量并提取对应位置的值
+            indices_tensor = torch.tensor(indices, device=result.device, dtype=torch.long)
+            min_k_scores_tensor = flattened_result[0, 0, indices_tensor]
+            min_k_mean = min_k_scores_tensor.mean()
+        else:
+            min_k_mean = torch.tensor(0.0, device=result.device)
+
+        # 4. 计算并返回差值 (大的平均值 - 小的平均值)
+        # 添加平滑项防止log(0)导致的数值不稳定
+        epsilon = 1e-8
+        # 确保min_k_mean大于0，避免log(0)
+        min_k_mean = torch.clamp(min_k_mean, min=epsilon)
+        score_difference = top_k_mean * 10 - torch.log(min_k_mean)
+
+        # 使用平滑的clamp替代硬性的max操作，确保梯度连续
+        final_score = torch.clamp(score_difference, min=-10.0)
+
+        return final_score
+
+    import torch
+
+    def calculate_ciou_loss(self, pred_bbox, target_bbox, img_hw=None):
+        """
+        计算两个边界框之间的CIoU (Complete Intersection over Union)损失。
+
+        参数:
+            pred_bbox (torch.Tensor): 预测边界框，形状为(4,)或(batch_size, 4)，格式为[x, y, w, h]。
+                                      x, y: 左上角坐标；w, h: 宽度和高度。
+            target_bbox (torch.Tensor): 目标边界框（如真实框或干净模型预测框），
+                                        形状和格式需与pred_bbox完全一致。
+            img_hw (torch.Tensor, optional): 图像尺寸，形状为(2,)或(batch_size, 2)，格式为[img_h, img_w]，
+                                             用于裁剪越界的预测框。若为None则不裁剪。
+
+        返回:
+            torch.Tensor: CIoU损失值。若输入为批量数据，返回形状为(batch_size,)的张量；
+                         若为单对框，返回标量张量。
+        """
+        # 确保输入为二维张量 (batch_size, 4)
+        if pred_bbox.dim() == 1:
+            pred_bbox = pred_bbox.unsqueeze(0)
+        if target_bbox.dim() == 1:
+            target_bbox = target_bbox.unsqueeze(0)
+
+        # --- 新增：将 [x, y, w, h] 转换为 [x1, y1, x2, y2] ---
+        # 预测框转换
+        pred_x1 = pred_bbox[..., 0]
+        pred_y1 = pred_bbox[..., 1]
+        pred_x2 = pred_bbox[..., 0] + pred_bbox[..., 2]
+        pred_y2 = pred_bbox[..., 1] + pred_bbox[..., 3]
+        pred_bbox_xyxy = torch.stack([pred_x1, pred_y1, pred_x2, pred_y2], dim=-1)
+
+        # 目标框转换
+        target_x1 = target_bbox[..., 0]
+        target_y1 = target_bbox[..., 1]
+        target_x2 = target_bbox[..., 0] + target_bbox[..., 2]
+        target_y2 = target_bbox[..., 1] + target_bbox[..., 3]
+        target_bbox_xyxy = torch.stack([target_x1, target_y1, target_x2, target_y2], dim=-1)
+        # --- 转换结束 ---
+
+        # 裁剪预测框至图像范围内（可选）
+        if img_hw is not None:
+            if img_hw.dim() == 1:
+                img_hw = img_hw.unsqueeze(0)
+            img_w = img_hw[..., 1]
+            img_h = img_hw[..., 0]
+            # 逐元素裁剪，避免越界
+            pred_bbox_xyxy[..., 0] = pred_bbox_xyxy[..., 0].clamp(0, img_w - 1)
+            pred_bbox_xyxy[..., 1] = pred_bbox_xyxy[..., 1].clamp(0, img_h - 1)
+            pred_bbox_xyxy[..., 2] = pred_bbox_xyxy[..., 2].clamp(0, img_w - 1)
+            pred_bbox_xyxy[..., 3] = pred_bbox_xyxy[..., 3].clamp(0, img_h - 1)
+
+        # 1. 计算交集区域
+        inter_x1 = torch.max(pred_bbox_xyxy[..., 0], target_bbox_xyxy[..., 0])
+        inter_y1 = torch.max(pred_bbox_xyxy[..., 1], target_bbox_xyxy[..., 1])
+        inter_x2 = torch.min(pred_bbox_xyxy[..., 2], target_bbox_xyxy[..., 2])
+        inter_y2 = torch.min(pred_bbox_xyxy[..., 3], target_bbox_xyxy[..., 3])
+
+        inter_area = torch.clamp(inter_x2 - inter_x1 + 1, min=0) * \
+                     torch.clamp(inter_y2 - inter_y1 + 1, min=0)
+
+        # 2. 计算两个框的面积
+        pred_area = (pred_bbox_xyxy[..., 2] - pred_bbox_xyxy[..., 0] + 1) * \
+                    (pred_bbox_xyxy[..., 3] - pred_bbox_xyxy[..., 1] + 1)
+        target_area = (target_bbox_xyxy[..., 2] - target_bbox_xyxy[..., 0] + 1) * \
+                      (target_bbox_xyxy[..., 3] - target_bbox_xyxy[..., 1] + 1)
+
+        # 3. 计算IoU (Intersection over Union)
+        iou = inter_area / (pred_area + target_area - inter_area + 1e-6)
+
+        # 4. 计算中心点距离的平方 (ρ²)
+        pred_cx = (pred_bbox_xyxy[..., 0] + pred_bbox_xyxy[..., 2]) / 2
+        pred_cy = (pred_bbox_xyxy[..., 1] + pred_bbox_xyxy[..., 3]) / 2
+        target_cx = (target_bbox_xyxy[..., 0] + target_bbox_xyxy[..., 2]) / 2
+        target_cy = (target_bbox_xyxy[..., 1] + target_bbox_xyxy[..., 3]) / 2
+
+        rho2 = (pred_cx - target_cx) ** 2 + (pred_cy - target_cy) ** 2
+
+        # 5. 计算最小包围框对角线长度的平方 (c²)
+        enclose_x1 = torch.min(pred_bbox_xyxy[..., 0], target_bbox_xyxy[..., 0])
+        enclose_y1 = torch.min(pred_bbox_xyxy[..., 1], target_bbox_xyxy[..., 1])
+        enclose_x2 = torch.max(pred_bbox_xyxy[..., 2], target_bbox_xyxy[..., 2])
+        enclose_y2 = torch.max(pred_bbox_xyxy[..., 3], target_bbox_xyxy[..., 3])
+
+        c2 = (enclose_x2 - enclose_x1 + 1) ** 2 + (enclose_y2 - enclose_y1 + 1) ** 2
+
+        # 6. 计算长宽比一致性因子 (v)
+        pred_w = pred_bbox_xyxy[..., 2] - pred_bbox_xyxy[..., 0] + 1
+        pred_h = pred_bbox_xyxy[..., 3] - pred_bbox_xyxy[..., 1] + 1
+        target_w = target_bbox_xyxy[..., 2] - target_bbox_xyxy[..., 0] + 1
+        target_h = target_bbox_xyxy[..., 3] - target_bbox_xyxy[..., 1] + 1
+
+        v = (4 / (torch.pi ** 2)) * torch.pow(
+            torch.atan(target_w / (target_h + 1e-6)) - torch.atan(pred_w / (pred_h + 1e-6)), 2
+        )
+
+        # 7. 计算平衡因子 (α)
+        alpha = v / ((1 - iou) + v + 1e-6)
+
+        # 8. 计算CIoU并得到损失 (1 - CIoU)
+        ciou = iou - (rho2 / (c2 + 1e-6)) - alpha * v
+        loss = ciou * 10
+
+        # 若输入为单样本，返回标量张量
+        if loss.numel() == 1:
+            loss = loss.squeeze()
+
+        return loss
 
     def track_top_k_probability_score(self, result):
         result = result.view(1, 1, -1)
