@@ -16,8 +16,8 @@ class Dataset_Produce(Torch_Dataset):
 
     # 获得数据
     def __getitem__(self, index):
-        identifier, image, image_mask, label, camera_position = self.__dataset[index]
-        return identifier, image, image_mask, label, camera_position
+        identifier, image, image_mask, label, camera_position, relative_remove = self.__dataset[index]
+        return identifier, image, image_mask, label, camera_position, relative_remove
 
     # 得到数据长度
     def __len__(self):

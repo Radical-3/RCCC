@@ -1,3 +1,4 @@
+import math
 import os.path
 import warnings
 
@@ -60,12 +61,53 @@ class Mesh:
                                                          texture_atlas_size=self.__config.texture_size,
                                                          texture_wrap="repeat")
 
+        self.__fix_orientation()
+
         self.__atlas = self.__aux.texture_atlas
         self.__atlas_backup = self.__aux.texture_atlas.clone()
 
         idx = self.__faces.materials_idx.cpu().numpy()
         self.__face_material_names = np.array(list(self.__aux.texture_images.keys()))[idx]
         self.__face_material_names[idx == -1] = ""
+
+    # =================================================================
+    # [新增] 核心修复函数：站立 + 旋转90度 + 翻转Y + 缩放
+    # =================================================================
+    def __fix_orientation(self, angle_deg=90.0, scale_factor=1):
+        """
+        修正 CARLA 模型到 PyTorch3D 的坐标系差异
+        1. 站立 (Y-up -> Z-up)
+        2. 旋转 90 度 (解决朝向问题)
+        3. 缩放 (解决大小问题)
+        4. 镜像翻转 Y 轴 (解决左右反向问题)
+        """
+        # 1. 站立修正
+        rot_mat_stand = torch.tensor([
+            [1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, -1.0, 0.0]
+        ], device=self.__device)
+        self.__vert = torch.matmul(self.__vert, rot_mat_stand)
+
+        # 2. 旋转修正 (逆时针 90 度)
+        rad = math.radians(angle_deg)
+        cos_a = math.cos(rad)
+        sin_a = math.sin(rad)
+        rot_mat_z = torch.tensor([
+            [cos_a, -sin_a, 0.0],
+            [sin_a, cos_a, 0.0],
+            [0.0, 0.0, 1.0]
+        ], device=self.__device)
+        self.__vert = torch.matmul(self.__vert, rot_mat_z)
+
+        # 3. 缩放修正
+        self.__vert = self.__vert * scale_factor
+
+        # 4. 镜像修正 (只翻转 Y)
+        # 这一步把"右下"修正为"右上"
+        self.__vert[:, 1] = -self.__vert[:, 1]
+
+        logger.info("Mesh orientation, rotation, scale, and mirror fixed.")
 
     def set_camo(self, camo):
         self.__atlas = camo.item() * camo.camo_mask() + self.__atlas_backup * (1 - camo.camo_mask())

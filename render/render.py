@@ -1,4 +1,6 @@
 import types
+
+import numpy as np
 import torch
 
 from pytorch3d.renderer import (
@@ -8,7 +10,7 @@ from pytorch3d.renderer import (
     MeshRenderer,
     MeshRasterizer,
     SoftPhongShader,
-    PointLights,
+    PointLights, camera_position_from_spherical_angles, PerspectiveCameras,
 )
 
 from utils import remove_alpha
@@ -34,9 +36,19 @@ class Renderer:
         self.set_lights()
         self.set_raster_settings()
 
+    def set_camera(self, eye_tensor, at_tensor, up_tensor, aspect_ratio=1.0):
+        R, T = look_at_view_transform(
+            eye=eye_tensor,
+            at=at_tensor,
+            up=up_tensor
+        )
+
+        self.__cameras = FoVPerspectiveCameras(R=R, T=T, fov=59.7, aspect_ratio=aspect_ratio, device=self.__device)
+
     # 设置相机位置，生成camera类
-    def set_camera_position(self, dist, elev, azim):
-        R, T = look_at_view_transform(dist * self.__config.scale, elev, azim, device=self.__device)
+    def set_camera_position(self, dist, elev, azim, at=((0, 0, 0),)):
+        # R, T = look_at_view_transform(dist * self.__config.scale, elev, azim, device=self.__device)
+        R, T = look_at_view_transform(dist * self.__config.scale, elev, azim, at=at, degrees=True, device=self.__device)
         self.__cameras = FoVPerspectiveCameras(R=R, T=T, device=self.__device)
 
     def set_raster_settings(self):
