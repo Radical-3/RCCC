@@ -61,7 +61,20 @@ class Mesh:
                                                          texture_atlas_size=self.__config.texture_size,
                                                          texture_wrap="repeat")
 
-        self.__fix_orientation()
+        # ========================================================
+        # [核心修改] 在这里调整模型本身的姿态、大小和中心点偏移
+        # ========================================================
+        # scale_factor: 单独缩放车的大小，不影响距离
+        # offset: [x, y, z] 微调车的中心点。
+        #         x: 前后 (+前 -后)
+        #         y: 左右 (+左 -右)
+        #         z: 上下 (+上 -下)
+        self.__fix_orientation(
+            angle_deg=90.0,
+            scale_factor=1.1,  # 这里调整车的大小 (0.9 ~ 1.0)
+            offset=[0.0, 0.1, 0.1]  # 这里调整中心点偏移，单位是米
+        )
+        # ========================================================
 
         self.__atlas = self.__aux.texture_atlas
         self.__atlas_backup = self.__aux.texture_atlas.clone()
@@ -70,17 +83,7 @@ class Mesh:
         self.__face_material_names = np.array(list(self.__aux.texture_images.keys()))[idx]
         self.__face_material_names[idx == -1] = ""
 
-    # =================================================================
-    # [新增] 核心修复函数：站立 + 旋转90度 + 翻转Y + 缩放
-    # =================================================================
-    def __fix_orientation(self, angle_deg=90.0, scale_factor=1):
-        """
-        修正 CARLA 模型到 PyTorch3D 的坐标系差异
-        1. 站立 (Y-up -> Z-up)
-        2. 旋转 90 度 (解决朝向问题)
-        3. 缩放 (解决大小问题)
-        4. 镜像翻转 Y 轴 (解决左右反向问题)
-        """
+    def __fix_orientation(self, angle_deg=90.0, scale_factor=1.0, offset=[0.0, 0.0, 0.0]):
         # 1. 站立修正
         rot_mat_stand = torch.tensor([
             [1.0, 0.0, 0.0],
@@ -89,7 +92,7 @@ class Mesh:
         ], device=self.__device)
         self.__vert = torch.matmul(self.__vert, rot_mat_stand)
 
-        # 2. 旋转修正 (逆时针 90 度)
+        # 2. 旋转修正 (90度)
         rad = math.radians(angle_deg)
         cos_a = math.cos(rad)
         sin_a = math.sin(rad)
@@ -100,14 +103,19 @@ class Mesh:
         ], device=self.__device)
         self.__vert = torch.matmul(self.__vert, rot_mat_z)
 
-        # 3. 缩放修正
-        self.__vert = self.__vert * scale_factor
-
-        # 4. 镜像修正 (只翻转 Y)
-        # 这一步把"右下"修正为"右上"
+        # 3. 镜像修正 (Y轴翻转) - 解决朝向镜像问题
         self.__vert[:, 1] = -self.__vert[:, 1]
 
-        logger.info("Mesh orientation, rotation, scale, and mirror fixed.")
+        # 4. [新增] 缩放修正 (只缩放模型，不影响世界坐标距离)
+        self.__vert = self.__vert * scale_factor
+
+        # 5. [新增] 中心点偏移修正 (Translation Offset)
+        # 如果车偏右下，说明模型的中心点和 CARLA 的中心点没对上
+        # 需要在这里手动移回去
+        offset_tensor = torch.tensor(offset, device=self.__device)
+        self.__vert = self.__vert + offset_tensor
+
+        logger.info(f"Mesh fixed: Rot={angle_deg}, Scale={scale_factor}, Offset={offset}")
 
     def set_camo(self, camo):
         self.__atlas = camo.item() * camo.camo_mask() + self.__atlas_backup * (1 - camo.camo_mask())
