@@ -64,7 +64,7 @@ def fix_mesh_orientation(pytorch3d_mesh, device):
 # ==============================================================================
 # 2. 参数计算: 恢复 Y 轴取反 (核心!)
 # ==============================================================================
-def get_params(relative_cam, relative_veh, scale=0.98, device="cuda"):
+def get_params(relative_cam, relative_veh, scale=1, device="cuda"):
     # 解析数据
     cam_pos = np.array(relative_cam[0])
     cam_rot = relative_cam[1]
@@ -143,7 +143,7 @@ def test_camera_position2():
             relative_data = data_temp[5].float().squeeze()
             relative_cam = (relative_data[:3].tolist(), relative_data[3:6].tolist())
             relative_veh = (relative_data[6:9].tolist(), relative_data[9:12].tolist())
-            eye_tensor, at_tensor, up_tensor = get_params(relative_cam, relative_veh, 0.94)
+            eye_tensor, at_tensor, up_tensor = get_params(relative_cam, relative_veh, 1)
             # eye_tensor, at_tensor, up_tensor = get_params(relative_cam, relative_veh, 1)
 
             # 对模板图像添加对抗伪装
