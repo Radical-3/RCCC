@@ -124,55 +124,6 @@ class Loss:
         返回:
             torch.Tensor: 一个标量张量，表示 (最大位置得分的平均值) - (最小位置得分的平均值)。
         """
-        # # 1. 将 result 展平，以便通过索引直接获取值
-        # # result 的形状是 [1, 1, 16, 16]，展平后变为 [1, 1, 256]
-        # flattened_result = result.view(1, 1, -1)
-        #
-        # # 2. 提取 top_k_pos 对应的得分并计算平均值（使用张量操作保持梯度）
-        # if len(top_k_pos) > 0:
-        #     # 构建索引张量
-        #     indices = []
-        #     for pos in top_k_pos:
-        #         b, c, h, w = pos
-        #         idx = h * result.shape[3] + w
-        #         indices.append(idx)
-        #
-        #     # 转换为张量并提取对应位置的值
-        #     indices_tensor = torch.tensor(indices, device=result.device, dtype=torch.long)
-        #     top_k_scores_tensor = flattened_result[0, 0, indices_tensor]
-        #     top_k_mean = top_k_scores_tensor.mean()
-        # else:
-        #     top_k_mean = torch.tensor(0.0, device=result.device)
-        #
-        # # 3. 提取 min_k_pos 对应的得分并计算平均值（使用张量操作保持梯度）
-        # if len(min_k_pos) > 0:
-        #     # 构建索引张量
-        #     indices = []
-        #     for pos in min_k_pos:
-        #         b, c, h, w = pos
-        #         idx = h * result.shape[3] + w
-        #         indices.append(idx)
-        #
-        #     # 转换为张量并提取对应位置的值
-        #     indices_tensor = torch.tensor(indices, device=result.device, dtype=torch.long)
-        #     min_k_scores_tensor = flattened_result[0, 0, indices_tensor]
-        #     min_k_mean = min_k_scores_tensor.mean()
-        # else:
-        #     min_k_mean = torch.tensor(0.0, device=result.device)
-        #
-        # # 4. 计算并返回差值 (大的平均值 - 小的平均值)
-        # # 添加平滑项防止log(0)导致的数值不稳定
-        # epsilon = 1e-8
-        # # 确保min_k_mean大于0，避免log(0)
-        # min_k_mean = torch.clamp(min_k_mean, min=epsilon)
-        # score_difference = top_k_mean * 10 - torch.log(min_k_mean)
-        #
-        # # 使用平滑的clamp替代硬性的max操作，确保梯度连续
-        # final_score = torch.clamp(score_difference, min=-10.0)
-        #
-        # return final_score
-        # 1. 将 result 展平，以便通过索引直接获取值
-        # result 的形状是 [1, 1, 16, 16]，展平后变为 [1, 1, 256]
         flattened_result = result.view(1, 1, -1)
 
         # 2. 提取 top_k_pos 对应的得分并计算平均值（使用张量操作保持梯度）
