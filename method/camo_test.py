@@ -19,7 +19,7 @@ from detector.neural_networks.track.OSTrack.tracking.seq_list import seq_list
 from log import logger
 from config import Config
 
-
+# 测试渲染的车的位置是否正确
 def test_camera_position():
     config = Config(logger, './config/base.yaml').item()
     logger.set_config(config)
@@ -39,7 +39,7 @@ def test_camera_position():
             dist, elev, azim = data_temp[4].float()
             background_temp = data_temp[1].to(config.device).to(torch.float32) / 255
             mask_temp = data_temp[2].to(config.device).to(torch.float32)
-            relative_remove = data_temp[5].float().tolist()
+            relative_remove = [data_temp[5].float().squeeze().tolist()]
 
             # 对模板图像添加对抗伪装
             renderer.set_camera_position(dist, elev, azim, at=relative_remove)
