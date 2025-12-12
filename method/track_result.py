@@ -178,8 +178,10 @@ def track_result():
                     # 将浮点数转换为整数，因为绘制图像时需要整数像素值
                     # x, y, w, h = map(int, bbox)
                     # # 使用 cv2.rectangle 在图像上绘制矩形框，参数分别是图像，左上角坐标，右下角坐标，颜色和线条宽度
-                    # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                    # cv2.imshow('x', image)
-                    # cv2.waitKey(0)
+                    # # 先将图像转换为numpy数组，确保维度正确
+                    # image_np = convert_to_numpy(image.unsqueeze(0))  # 添加batch维度
+                    # cv2.rectangle(image_np, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    # cv2.imshow('x', image_np)
+                    # cv2.waitKey(0)  # 改为1ms等待，提高处理速度
                     # cv2.destroyAllWindows()
 
