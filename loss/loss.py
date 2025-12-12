@@ -14,7 +14,66 @@ class Loss:
         self.__model = model
         self.__names = model.get_names()
 
-    def giou_loss(boxes1, boxes2):
+    def iou_attack_loss(self, pred_bbox, target_bbox):
+        """
+        计算纯 IoU 损失，专门用于对抗攻击（Adversarial Attack）。
+        目标是最小化此 Loss，从而使 IoU 趋向于 0（让跟踪器跟丢）。
+
+        参数:
+        - pred_bbox: (N, 4) 张量，预测框，格式为 (x, y, w, h)
+        - target_bbox: (N, 4) 张量，目标框，格式为 (x, y, w, h)
+
+        返回:
+        - loss: IoU 的均值 (攻击越成功，此值越接近 0)
+        - iou_val: 当前的 IoU 均值 (用于监控)
+        """
+
+        # 1. 坐标转换: (x, y, w, h) -> (x1, y1, x2, y2)
+        # pred_bbox shape: [batch_size, 4]
+        pred_x1 = pred_bbox[..., 0]
+        pred_y1 = pred_bbox[..., 1]
+        pred_x2 = pred_bbox[..., 0] + pred_bbox[..., 2]
+        pred_y2 = pred_bbox[..., 1] + pred_bbox[..., 3]
+
+        target_x1 = target_bbox[..., 0]
+        target_y1 = target_bbox[..., 1]
+        target_x2 = target_bbox[..., 0] + target_bbox[..., 2]
+        target_y2 = target_bbox[..., 1] + target_bbox[..., 3]
+
+        # 2. 计算相交区域 (Intersection)
+        inter_x1 = torch.max(pred_x1, target_x1)
+        inter_y1 = torch.max(pred_y1, target_y1)
+        inter_x2 = torch.min(pred_x2, target_x2)
+        inter_y2 = torch.min(pred_y2, target_y2)
+
+        # 这里的 clamp(min=0) 非常重要，如果没有重叠，宽或高为负数，乘积可能变正数，导致逻辑错误
+        inter_w = torch.clamp(inter_x2 - inter_x1, min=0)
+        inter_h = torch.clamp(inter_y2 - inter_y1, min=0)
+        inter_area = inter_w * inter_h
+
+        # 3. 计算并集区域 (Union)
+        pred_area = pred_bbox[..., 2] * pred_bbox[..., 3]
+        target_area = target_bbox[..., 2] * target_bbox[..., 3]
+
+        # 防止分母为 0 添加 1e-6
+        union_area = pred_area + target_area - inter_area + 1e-6
+
+        # 4. 计算 IoU
+        iou = inter_area / union_area
+
+        # 5. 定义损失
+        # -----------------------------------------------------------
+        # 重要：因为你是做攻击（想让 IoU 变小），所以 Loss 直接等于 IoU。
+        # 如果 Loss 趋向于 0，说明没有重叠，攻击成功。
+        # -----------------------------------------------------------
+        loss = iou
+
+        # 进阶版（可选）：如果你发现 loss 下降太慢，可以使用平方，增加高 IoU 时的梯度
+        # loss = iou ** 2
+
+        return loss * 10
+
+    def giou_loss(self, boxes1, boxes2):
         """
         计算 Generalized IoU (GIoU) 损失.
 
