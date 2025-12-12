@@ -44,6 +44,18 @@ class Renderer:
         )
 
         self.__cameras = FoVPerspectiveCameras(R=R, T=T, fov=59.7, aspect_ratio=aspect_ratio, device=self.__device)
+        # 2. [核心修改] 让光源跟随相机位置
+        # eye_tensor 就是相机在当前渲染坐标系下的位置
+        # 直接把灯放在相机这里，就像打开了闪光灯一样，永远照亮车
+        # if eye_tensor is not None:
+        #     # 如果觉得正面光太硬，可以稍微把灯往上抬一点，例如：
+        #     light_pos = eye_tensor.clone()
+        #     # light_pos[..., 2] += 10.0
+        #     light_pos[..., 1] += 10.0
+        #     self.set_lights(location=light_pos)
+        #
+        #     # 直接使用相机位置作为光源
+        #     # self.set_lights(location=eye_tensor)
 
     # 设置相机位置，生成camera类
     def set_camera_position(self, dist, elev, azim, at=((0, 0, 0),)):
@@ -68,9 +80,19 @@ class Renderer:
 
     def set_lights(self, location=None):
         if location is None:
+            # 如果没传位置，使用配置文件中的默认位置
             self.__lights = PointLights(device=self.__device, location=[self.__config.light])
         else:
-            self.__lights = PointLights(device=self.__device, location=[location])
+            # [修改] 增强健壮性，确保 location 格式符合 PointLights 要求
+            if torch.is_tensor(location):
+                # PointLights location 需要 (N, 3)，如果传入的是 (3,) 则升维
+                if location.dim() == 1:
+                    location = location.unsqueeze(0)
+                # 确保在正确的 device 上
+                location = location.to(self.__device)
+                self.__lights = PointLights(device=self.__device, location=location)
+            else:
+                self.__lights = PointLights(device=self.__device, location=[location])
 
     def render(self, mesh):
         renderer = MeshRenderer(
