@@ -229,7 +229,92 @@ class Loss:
 
         return final_score
 
-    import torch
+    # 使用归一化之前的得分来计算损失
+    def track_logit_attack_loss(self, result, top_k_pos, min_k_pos):
+        """
+        基于 Logits 的去耦合攻击损失函数 (Decoupled Logit Attack Loss)。
+        目标：最小化此函数的返回值。
+
+        逻辑：
+        1. 压制 top_k_pos (原目标区域): 强迫其 Logit 降到 -2.0 以下。
+        2. 提拔 min_k_pos (背景/攻击区域): 强迫其 Logit 升到 3.0 以上。
+
+        参数:
+            result (torch.Tensor): 模型的 Logits 输出，形状 [1, 1, 16, 16]。
+                                   注意：必须是未经过 Sigmoid 的原始值！
+            top_k_pos (list): 目标区域坐标列表 (要压制的地方)。
+            min_k_pos (list): 想要伪造目标的背景区域坐标列表 (要提拔的地方)。
+
+        返回:
+            loss (torch.Tensor): 标量损失值。
+        """
+        # 1. 展平 Logits
+        # result shape: (B, 1, H, W) -> (B, H*W)
+        # 假设 batch_size=1，这里直接 view
+        flattened_result = result.view(1, 1, -1)
+
+        # --- 设定攻击的目标阈值 (基于 Logits) ---
+        # Target Goal: 让目标变得像背景 (Sigmoid(-2.0) ≈ 0.12)
+        target_threshold = -2.0
+        # Distractor Goal: 让背景变得像目标 (Sigmoid(3.0) ≈ 0.95)
+        distractor_threshold = 3.0
+
+        # 2. 提取 Target Logits (原目标)
+        if len(top_k_pos) > 0:
+            indices = []
+            for pos in top_k_pos:
+                b, c, h, w = pos
+                # 计算平铺后的索引
+                idx = h * result.shape[3] + w
+                indices.append(idx)
+
+            indices_tensor = torch.tensor(indices, device=result.device, dtype=torch.long)
+            # 获取目标区域的 Logits
+            target_logits = flattened_result[0, 0, indices_tensor]
+            # 计算平均 Logit
+            target_mean = target_logits.mean()
+        else:
+            # 如果没有检测到目标，这部分 Loss 为 0 (或者设为一个足够小的值)
+            target_mean = torch.tensor(target_threshold - 1.0, device=result.device)
+
+        # 3. 提取 Distractor Logits (攻击位置)
+        if len(min_k_pos) > 0:
+            indices = []
+            for pos in min_k_pos:
+                b, c, h, w = pos
+                idx = h * result.shape[3] + w
+                indices.append(idx)
+
+            indices_tensor = torch.tensor(indices, device=result.device, dtype=torch.long)
+            # 获取攻击位置的 Logits
+            distractor_logits = flattened_result[0, 0, indices_tensor]
+            # 计算平均 Logit
+            distractor_mean = distractor_logits.mean()
+        else:
+            # 如果没有指定背景，这部分 Loss 为 0
+            distractor_mean = torch.tensor(distractor_threshold + 1.0, device=result.device)
+
+        # 4. 计算去耦合损失 (Decoupled Loss)
+        # ---------------------------------------------------------------------
+        # Loss 1: 压制目标 (Suppress Target)
+        # 如果 Target > -2.0, 产生 Loss; 如果 Target <= -2.0, Loss = 0
+        # 目前 Target ≈ 1.7, Loss ≈ 1.7 - (-2.0) = 3.7
+        loss_suppress = torch.clamp(target_mean - target_threshold, min=0)
+
+        # Loss 2: 提拔背景 (Boost Distractor)
+        # 如果 Distractor < 3.0, 产生 Loss; 如果 Distractor >= 3.0, Loss = 0
+        # 目前 Distractor ≈ -8.3, Loss ≈ 3.0 - (-8.3) = 11.3 (梯度主导！)
+        loss_boost = torch.clamp(distractor_threshold - distractor_mean, min=0)
+
+        # ---------------------------------------------------------------------
+
+        # 5. 总损失
+        # 可以给 loss_boost 加权重，因为"造假"通常比"隐藏"更难
+        total_loss = loss_suppress + 1.5 * loss_boost
+
+        return total_loss
+
+
 
     def calculate_ciou_loss(self, pred_bbox, target_bbox, img_hw=None):
         """
