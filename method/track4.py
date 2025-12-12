@@ -1,6 +1,7 @@
 # 使用新的损失函数：正确位置的得分变小，边缘位置的得分变大
 # 需要用到搜索图像的正确位置还是说使用原始搜索图像预测一下
 import math
+import os
 
 import cv2
 import numpy
@@ -109,7 +110,7 @@ def track4():
     #     factor=0.8,  # 学习率衰减因子，每次减半
     #     patience=100,  # 如果损失5个epoch没有改善，就降低学习率
     #     verbose=True,  # 打印学习率变化信息
-    #     threshold=1e-4,  # 损失变化的阈值，只有变化大于此值才算“改善”
+    #     threshold=1e-4,  # 损失变化的阈值，只有变化大于此值才算"改善"
     #     cooldown=0,  # 冷却期，降低学习率后，等待这么多epoch再重新监控
     #     min_lr=1e-6  # 学习率的下限，不能低于此值
     # )
@@ -277,8 +278,25 @@ def track4():
                 avg_ciou_loss = np.mean(losses["ciou"])
                 metrics.update_losses(dataset_name, epoch + 1, avg_total_loss, avg_score_loss, avg_ciou_loss)
 
+        # 每100轮保存一次图片、损失和camo
+        if (epoch + 1) % 100 == 0:
+            # 创建保存目录
+            save_dir = f"./output/checkpoint_epoch_{epoch + 1}"
+            os.makedirs(save_dir, exist_ok=True)
+            
+            # 保存camo
+            camo.save_camo_pth(save_dir)
+            
+            # 保存纹理图
+            mesh.set_camo(camo)
+            mesh.make_texture_map_from_atlas(save_dir)
+            
+            # 保存当前损失图表
+            metrics.plot_losses(save_dir)
+            # metrics.save_losses_to_csv(save_dir)
+
     if config.save_camo_to_pth:
-        camo.save_camo_pth("./output")
+        camo.save_camo_pth("./output/tracker4")
 
     # 在所有epoch训练完成后绘制损失曲线
     metrics.plot_losses("./output/loss")
