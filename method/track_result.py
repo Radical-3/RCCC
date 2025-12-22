@@ -145,7 +145,6 @@ def track_result():
 
             with tqdm(enumerate(seq.frames[1:], start=1), total=len(seq.frames[1:]), desc="Processing Frames") as pbar:
                 for frame_num, frame_path in pbar:
-            # for frame_num, frame_path in enumerate(seq.frames[1:], start=1):
                     mesh.set_camo(camo)
                     data_np = numpy.load(frame_path, allow_pickle=True)
                     data = [torch.tensor(item) for item in data_np]
