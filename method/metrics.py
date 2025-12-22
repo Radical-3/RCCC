@@ -19,7 +19,7 @@ def init_metrics(save_dir):
         os.makedirs(save_dir)
 
 
-def update_losses(dataset_name, epoch, total_loss, score_loss, ciou_loss):
+def update_losses(dataset_name, epoch, total_loss, score_loss, iou_loss):
     """
     更新特定数据集的损失值
     
@@ -28,20 +28,20 @@ def update_losses(dataset_name, epoch, total_loss, score_loss, ciou_loss):
         epoch: 当前epoch
         total_loss: 总损失
         score_loss: 得分损失
-        ciou_loss: CIoU损失
+        ciou_loss: IoU损失
     """
     if dataset_name not in datasets_losses:
         datasets_losses[dataset_name] = {
             "epochs": [],
             "total_losses": [],
             "score_losses": [],
-            "ciou_losses": []
+            "iou_losses": []
         }
     
     datasets_losses[dataset_name]["epochs"].append(epoch)
     datasets_losses[dataset_name]["total_losses"].append(total_loss)
     datasets_losses[dataset_name]["score_losses"].append(score_loss)
-    datasets_losses[dataset_name]["ciou_losses"].append(ciou_loss)
+    datasets_losses[dataset_name]["iou_losses"].append(iou_loss)
 
 
 def plot_losses(save_dir="./output"):
@@ -89,14 +89,14 @@ def plot_losses(save_dir="./output"):
     # 绘制CIoU损失图表
     plt.figure(figsize=(10, 6))
     for dataset_name, dataset_data in datasets_losses.items():
-        plt.plot(dataset_data["epochs"], dataset_data["ciou_losses"], marker='^', label=dataset_name)
+        plt.plot(dataset_data["epochs"], dataset_data["iou_losses"], marker='^', label=dataset_name)
     plt.xlabel('Epoch')
-    plt.ylabel('CIoU Loss')
-    plt.title('CIoU Loss vs Epoch (All Datasets)')
+    plt.ylabel('IoU Loss')
+    plt.title('IoU Loss vs Epoch (All Datasets)')
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(os.path.join(save_dir, 'ciou_losses.png'))
+    plt.savefig(os.path.join(save_dir, 'iou_losses.png'))
     plt.close()
 
 
@@ -111,7 +111,7 @@ def save_losses_to_csv(save_dir="./output"):
         return
     
     # 为每种损失创建一个CSV文件
-    for loss_type in ["total_losses", "score_losses", "ciou_losses"]:
+    for loss_type in ["total_losses", "score_losses", "iou_losses"]:
         csv_path = os.path.join(save_dir, f'{loss_type}.csv')
         with open(csv_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
