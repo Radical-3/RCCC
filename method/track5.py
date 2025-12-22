@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from torch.optim import lr_scheduler
 
-from utils import convert_to_numpy, find_top_k_min_k_positions
+from utils import convert_to_numpy, find_top_k_min_k_positions, get_hard_negative_positions
 from torch import optim
 from tqdm import tqdm
 
@@ -159,7 +159,12 @@ def track5():
                 # 使用干净搜索图像和干净模板图像预测正确结果
                 ostracker.my_initialize(background_temp, init_info)
                 result_clean, bbox_clean = ostracker.my_track_tensor(background)
-                top_k_pos, min_k_pos = find_top_k_min_k_positions(result_clean, 2, 10)
+                clean_top_vals, clean_top_inds = torch.topk(result_clean.view(1, -1), 1)
+                top_k_pos = []
+                for idx in clean_top_inds[0]:
+                    top_k_pos.append((0, 0, (idx // 16).item(), (idx % 16).item()))
+                # top_k_pos, min_k_pos = find_top_k_min_k_positions(result_clean, 2, 10)
+                target_position = get_hard_negative_positions(result_clean, 10, 1)
 
                 # 对模板图像添加对抗伪装
                 renderer.set_camera(eye_tensor, at_tensor, up_tensor)
@@ -224,7 +229,7 @@ def track5():
                 # cv2.destroyAllWindows()
 
                 # loss_maximum_probability_score = loss.track_top_k_min_k_probability_score(result, top_k_pos, min_k_pos)
-                loss_maximum_probability_score = loss.track_logit_attack_loss(result, top_k_pos, min_k_pos) * 1.5
+                loss_maximum_probability_score = loss.track_logit_attack_loss(result, top_k_pos, target_position) * 1.5
 
                 loss_iou = loss.iou_attack_loss(bbox, bbox_clean)
 
@@ -235,9 +240,9 @@ def track5():
                 loss_value.backward()
 
                 # 打印梯度信息
-                print("Camo gradient norm:", camo.item().grad.norm())  # 查看梯度的L2范数
-                print("Camo gradient max:", camo.item().grad.max())  # 查看梯度最大值
-                print("Camo gradient min:", camo.item().grad.min())  # 查看梯度最小值
+                # print("Camo gradient norm:", camo.item().grad.norm())  # 查看梯度的L2范数
+                # print("Camo gradient max:", camo.item().grad.max())  # 查看梯度最大值
+                # print("Camo gradient min:", camo.item().grad.min())  # 查看梯度最小值
 
                 dataset_losses[seq.name]["total"].append(loss_value.item())
                 dataset_losses[seq.name]["score"].append(loss_maximum_probability_score.item())
@@ -279,11 +284,11 @@ def track5():
             # metrics.save_losses_to_csv(save_dir)
 
     if config.save_camo_to_pth:
-        camo.save_camo_pth("./output/tracker4")
+        camo.save_camo_pth("./output/tracker5")
 
     # 在所有epoch训练完成后绘制损失曲线
     metrics.plot_losses("./output/loss")
 
     if config.save_camo_to_png:
         mesh.set_camo(camo)
-        mesh.make_texture_map_from_atlas("./output/tracker4")
+        mesh.make_texture_map_from_atlas("./output/tracker5")
