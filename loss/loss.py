@@ -179,9 +179,9 @@ class Loss:
 
         # --- 目标阈值 ---
         # 压制目标到 -2.0 (Sigmoid ≈ 0.12)
-        target_threshold = -2.0
+        target_threshold = -5.0
         # 提拔背景到 +3.0 (Sigmoid ≈ 0.95)
-        distractor_threshold = 3.0
+        distractor_threshold = 5.0
 
         # 1. 计算目标区域 (Top K / Center) 的平均 Logit
         if len(top_k_pos) > 0:

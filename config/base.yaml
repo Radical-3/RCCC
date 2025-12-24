@@ -21,6 +21,7 @@ texture_size: 50
 scale: 0.97
 render_image_size: 1152
 light: [ 0.0, 10.0, 0.0 ]
+#light: [ 2.0, 10.0, 5.0 ]
 blur_radius: 0  # [0, 2]
 faces_per_pixel: 1
 bin_size:
@@ -79,11 +80,13 @@ cleaning_result_path: output/cleaning_result.txt
 
 # train --------------------------------------------------------------
 continue_train: False
-camo_pth_path: data/camo/camo-track-300.pth
+camo_pth_path: output/result/12-24/checkpoint_epoch_500/track4-500.pth
 train_dataset_path: data/dataset/10m/train
-epochs: 300
+epochs: 500
 batch_size: 1
-lr: 1e-10
+#lr: 1e-14
+#lr: 0.000001
+lr: 0.0001
 add_brightness: True
 min_brightness: -0.1
 max_brightness: 0.1
@@ -105,10 +108,10 @@ save_folder: experiment
 save_config: True
 save_config_name: base_config.yaml
 
-save_camo_to_pth: False
-save_camo_pth_name: camo-track-carla1-100.pth
+save_camo_to_pth: True
+save_camo_pth_name: track4-500.pth
 
-save_camo_to_png: False
+save_camo_to_png: True
 save_camo_png_name: tracker5-set_camo
 
 # ostracker----------------------------------------------------------

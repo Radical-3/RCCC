@@ -164,7 +164,7 @@ def track5():
                 for idx in clean_top_inds[0]:
                     top_k_pos.append((0, 0, (idx // 16).item(), (idx % 16).item()))
                 # top_k_pos, min_k_pos = find_top_k_min_k_positions(result_clean, 2, 10)
-                target_position = get_hard_negative_positions(result_clean, 10, 1)
+                target_position = get_hard_negative_positions(result_clean, 6, 1)
 
                 # 对模板图像添加对抗伪装
                 renderer.set_camera(eye_tensor, at_tensor, up_tensor)
@@ -229,7 +229,7 @@ def track5():
                 # cv2.destroyAllWindows()
 
                 # loss_maximum_probability_score = loss.track_top_k_min_k_probability_score(result, top_k_pos, min_k_pos)
-                loss_maximum_probability_score = loss.track_logit_attack_loss(result, top_k_pos, target_position) * 1.5
+                loss_maximum_probability_score = loss.track_logit_attack_loss(result, top_k_pos, target_position) * 20
 
                 loss_iou = loss.iou_attack_loss(bbox, bbox_clean)
 
