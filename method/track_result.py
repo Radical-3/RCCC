@@ -7,6 +7,7 @@ import numpy
 import numpy as np
 import torch
 
+from method.utils import visualize_heatmap
 from utils import convert_to_numpy
 from torch import optim
 from tqdm import tqdm
@@ -24,6 +25,7 @@ from detector.neural_networks.track.OSTrack.tracking.seq_list import seq_list
 from log import logger
 from config import Config
 from detector.neural_networks.track.OSTrack.lib.test.evaluation.tracker import Tracker
+
 def get_params(relative_cam, relative_veh, scale=1, device="cuda"):
     # 解析数据
     cam_pos = np.array(relative_cam[0])
@@ -167,7 +169,8 @@ def track_result():
                     image = image.squeeze(0)
                     # image = convert_to_numpy(image)
 
-                    result, bbox = ostracker.my_track(image)
+                    result, bbox, score_map_original = ostracker.my_track_ori_score(image)
+                    visualize_heatmap(convert_to_numpy(image.unsqueeze(0)), score_map_original, bbox)
 
                     # 将bbox写入文件，保留3位小数
                     formatted_bbox = [f"{val:.3f}" for val in bbox]
