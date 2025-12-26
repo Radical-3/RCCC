@@ -51,3 +51,44 @@ def visualize_heatmap(image, score_map, bbox=None, save_path=None, alpha=0.5):
         cv2.imshow('Heatmap Visualization', overlay)
         cv2.waitKey(1)
         pass
+
+def load_style_image(config, logger):
+    logger.info(f"Loading style image from: {config.style_image_path}")
+    style_img_np = cv2.imread(config.style_image_path)
+    style_img_np = cv2.cvtColor(style_img_np, cv2.COLOR_BGR2RGB)
+    # 转为 Tensor (1, 3, H, W) 并归一化
+    style_img_tensor = torch.from_numpy(style_img_np).float() / 255.0
+    style_img_tensor = style_img_tensor.permute(2, 0, 1).unsqueeze(0).to(config.device)
+    # 注意：这里还没有 Resize，建议在 loop 里根据渲染尺寸 resize，或者固定一个尺寸
+
+
+# ---新增辅助函数：生成重叠的滑动窗口 ---
+def get_sliding_window_crops(mask, crop_size, stride):
+    """
+    生成覆盖物体的滑动窗口坐标列表。
+    mask: (1, 1, H, W)
+    crop_size: int (e.g., 224)
+    stride: int (e.g., 112, 建议是 crop_size 的一半)
+    """
+    h, w = mask.shape[2], mask.shape[3]
+    crops = []
+
+    # 遍历高度和宽度
+    # 这里的 range 保证了“全选”所有区域
+    for y in range(0, h - crop_size + 1, stride):
+        for x in range(0, w - crop_size + 1, stride):
+
+            # 检查这一块是否有物体（通过 Mask 判断）
+            # 提取这一块的 Mask
+            mask_patch = mask[:, :, y:y + crop_size, x:x + crop_size]
+
+            # 如果这一块里 90% 以上都是黑色背景，就跳过，省显存
+            # valid_pixels_ratio = mask_patch.mean()
+            # if valid_pixels_ratio < 0.1:
+            #     continue
+
+            # 或者只要有一点点物体就保留 (为了边缘伪装)
+            if mask_patch.max() > 0.1:
+                crops.append((y, x))
+
+    return crops

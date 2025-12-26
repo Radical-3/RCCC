@@ -1,7 +1,10 @@
 import math
+import random
 
 import numpy as np
 import torch
+import torch.nn.functional as F
+from torchvision.models import vgg19, VGG19_Weights  # 新增导入
 from detector.neural_networks.track.OSTrack.lib.utils.box_ops import box_xywh_to_xyxy
 from detector.neural_networks.track.OSTrack.lib.utils.heapmap_utils import generate_heatmap
 from detector.neural_networks.track.OSTrack.lib.utils.focal_loss import FocalLoss
@@ -13,6 +16,164 @@ class Loss:
         self.__config = config
         self.__model = model
         self.__names = model.get_names()
+
+        # --- [新增] 初始化 VGG19 用于风格损失 ---
+        # 检查配置是否开启 style loss (建议在 config 中添加此开关)
+        if self.__config.use_style_loss:
+            # 加载预训练权重
+            weights = VGG19_Weights.DEFAULT
+            self.vgg = vgg19(weights=weights).features
+            self.vgg.to(self.__config.device).eval()
+
+            # 冻结参数，不参与梯度计算
+            for param in self.vgg.parameters():
+                param.requires_grad = False
+
+            # 定义用于计算风格的层 (AdvCam 论文推荐的层)
+            # 对应 features 中的索引: conv1_1, conv2_1, conv3_1, conv4_1, conv5_1
+            self.style_layers_indices = [0, 5, 10, 19, 28]
+
+            # 注册 ImageNet 的归一化参数 (VGG 需要)
+            self.register_vgg_normalization(self.__config.device)
+
+    def register_vgg_normalization(self, device):
+        self.mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1).to(device)
+        self.std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1).to(device)
+
+    def compute_gram_style_loss(self, generated_img, style_img):
+        """
+        计算风格损失 (Gram Matrix 差异)
+        generated_img: 渲染出的对抗样本 (Batch, 3, H, W)
+        style_img: 目标风格参考图 (Batch, 3, H, W)
+        """
+        loss = 0.0
+
+        # 1. 归一化 (VGG 预处理)
+        input_gen = (generated_img - self.mean) / self.std
+        input_style = (style_img - self.mean) / self.std
+
+        # 2. 前向传播并计算 Gram 矩阵
+        # 为了节省显存，我们不跑完整个网络，只跑到需要的层
+        x_gen = input_gen
+        x_style = input_style
+
+        for i, layer in enumerate(self.vgg):
+            x_gen = layer(x_gen)
+            x_style = layer(x_style)
+
+            if i in self.style_layers_indices:
+                gram_gen = self._gram_matrix(x_gen)
+                gram_style = self._gram_matrix(x_style)
+                # 计算均方误差
+                loss += F.mse_loss(gram_gen, gram_style)
+
+            # 如果已经跑过了最深的一层，就停止
+            if i >= max(self.style_layers_indices):
+                break
+
+        return loss
+
+    def _gram_matrix(self, input_tensor):
+        """辅助函数：计算 Gram 矩阵"""
+        # input: (batch, channel, h, w)
+        a, b, c, d = input_tensor.size()
+        features = input_tensor.view(a * b, c * d)
+        G = torch.mm(features, features.t())
+        # 归一化，防止由于特征图大小不同导致数值差异过大
+        return G.div(a * b * c * d)
+
+    def _get_sliding_window_crops(self, mask, crop_size, stride):
+        """辅助方法：获取滑动窗口坐标"""
+        h, w = mask.shape[2], mask.shape[3]
+        crops = []
+        # 遍历高度和宽度
+        for y in range(0, h - crop_size + 1, stride):
+            for x in range(0, w - crop_size + 1, stride):
+                # 提取这一块的 Mask
+                mask_patch = mask[:, :, y:y + crop_size, x:x + crop_size]
+                # 只要有一点点物体就保留
+                if mask_patch.max() > 0.1:
+                    crops.append((y, x))
+        return crops
+
+    def calculate_hybrid_style_loss(self, render_img, mask, style_img):
+        """
+        封装好的混合风格损失函数
+        Args:
+            render_img: 渲染出的图像 (B, 3, H, W)
+            mask: 物体掩码 (B, 1, H, W)
+            style_img: 目标风格图像 (1, 3, S_H, S_W)
+        Returns:
+            total_loss: 加权后的总风格损失
+        """
+        loss_style_local = torch.tensor(0.0, device=render_img.device)
+        loss_style_global = torch.tensor(0.0, device=render_img.device)
+
+        # 参数设置
+        crop_size = self.__config.style_crop_size
+        stride = self.__config.style_stride
+        global_weight_ratio = self.__config.style_global_weight_ratio  # 全局损失的权重占比
+
+        # =======================================================
+        # Part A: 局部高清纹理 (Sliding Window)
+        # =======================================================
+        crop_coords = self._get_sliding_window_crops(mask, crop_size, stride)
+
+        # 显存保护：如果切片过多，随机采样一部分 (例如最多16块)
+        if len(crop_coords) > 16:
+            crop_coords = random.sample(crop_coords, 16)
+
+        if len(crop_coords) > 0:
+            total_local_loss = 0
+            for (top, left) in crop_coords:
+                # 1. 切渲染图 & Mask
+                render_patch = render_img[:, :, top:top + crop_size, left:left + crop_size]
+                mask_patch = mask[:, :, top:top + crop_size, left:left + crop_size]
+
+                # 2. 切风格图 (随机位置)
+                s_h, s_w = style_img.shape[2], style_img.shape[3]
+                # 确保风格图够大，不够则resize
+                if s_h < crop_size or s_w < crop_size:
+                    style_img_resized = F.interpolate(style_img, size=(max(s_h, crop_size), max(s_w, crop_size)),
+                                                      mode='bilinear')
+                    s_h, s_w = style_img_resized.shape[2], style_img_resized.shape[3]
+                    curr_style_img = style_img_resized
+                else:
+                    curr_style_img = style_img
+
+                s_top = random.randint(0, s_h - crop_size)
+                s_left = random.randint(0, s_w - crop_size)
+                style_patch = curr_style_img[:, :, s_top:s_top + crop_size, s_left:s_left + crop_size]
+
+                # 3. Mask 操作 (消除背景)
+                masked_render = render_patch * mask_patch
+                masked_style = style_patch * mask_patch
+
+                # 4. 计算基础风格损失
+                patch_loss = self.compute_gram_style_loss(masked_render, masked_style)
+                total_local_loss += patch_loss
+
+            # 平均化
+            loss_style_local = total_local_loss / len(crop_coords)
+
+        # =======================================================
+        # Part B: 全局颜色/结构一致性
+        # =======================================================
+        # 缩放到 224 计算全局感
+        render_global = F.interpolate(render_img, size=(crop_size, crop_size), mode='bilinear')
+        mask_global = F.interpolate(mask, size=(crop_size, crop_size), mode='nearest')
+        style_global = F.interpolate(style_img, size=(crop_size, crop_size), mode='bilinear')
+
+        loss_style_global = self.compute_gram_style_loss(render_global * mask_global, style_global * mask_global)
+
+        # =======================================================
+        # 总 Loss 加权
+        # =======================================================
+        # config.style_loss_weight 是总权重 (如 1e6)
+        # 最终 loss = (局部 + 0.3 * 全局) * 总权重
+        final_loss = (loss_style_local + global_weight_ratio * loss_style_global) * self.__config.style_loss_weight
+
+        return final_loss
 
     def iou_attack_loss(self, pred_bbox, target_bbox):
         """

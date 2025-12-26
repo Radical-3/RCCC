@@ -23,6 +23,9 @@ from detector.neural_networks.track.OSTrack.tracking.seq_list import seq_list
 from detector.neural_networks.track.OSTrack.lib.test.evaluation.tracker import Tracker
 from utils import get_hard_negative_positions
 from . import metrics
+from .utils import load_style_image
+
+
 # 风格迁移隐蔽性
 def get_params(relative_cam, relative_veh, scale=1, device="cuda"):
     # 解析数据
@@ -102,6 +105,10 @@ def track7():
 
     # 初始化指标存储
     metrics.init_metrics("./output/loss")
+
+    # --- [新增] 加载目标风格图片 (Target Style Image) ---
+    if config.use_style_loss:
+        style_img_tensor = load_style_image(config, logger)
 
     # [新增] 定义最大随机间隔，建议 50-100，根据视频帧率调整
     # 间隔越大，训练越难，但生成的伪装对抗长时跟踪越有效
@@ -223,8 +230,12 @@ def track7():
                 # 计算平滑损失 (Total Variation)
                 loss_total_variation = loss.total_variation(image_backup.squeeze(), data[2])
 
-                # 总 Loss
-                loss_value = loss_maximum_probability_score + loss_total_variation + loss_iou
+                # 计算style损失 与 总loss
+                if config.use_style_loss:
+                    loss_style = loss.calculate_hybrid_style_loss(image_backup, mask, style_img_tensor)
+                    loss_value = loss_maximum_probability_score + loss_total_variation + loss_iou + loss_style
+                else:
+                    loss_value = loss_maximum_probability_score + loss_total_variation + loss_iou
 
                 optimizer.zero_grad()
                 loss_value.backward()

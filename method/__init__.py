@@ -7,6 +7,7 @@ from .track3 import track3
 from .track4 import track4
 from .track5 import track5
 from .track6 import track6
+from .track7 import track7
 from .camo_test import test_camera_position
 from .test_render2 import test_camera_position2
 from .track_result import track_result

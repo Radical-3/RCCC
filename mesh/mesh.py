@@ -84,7 +84,7 @@ class Mesh:
         self.__face_material_names = np.array(list(self.__aux.texture_images.keys()))[idx]
         self.__face_material_names[idx == -1] = ""
 
-    def __get_ori_camo(self):
+    def get_ori_camo(self):
         return self.__ori_camo
 
     def __fix_orientation(self, angle_deg=90.0, scale_factor=1.0, offset=[0.0, 0.0, 0.0]):

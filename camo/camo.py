@@ -15,7 +15,7 @@ class Camo:
         if config.camo_init_random:
             self.__camo = torch.rand(mesh.shape).to(self.__device)
         else:
-            self.__camo = mesh.__get_ori_camo.to(self.__device)
+            self.__camo = mesh.get_ori_camo().to(self.__device)
         self.__camo_mask = None
 
     def item(self):

@@ -98,6 +98,14 @@ add_noise: True
 noise_intensity: 0.1
 mps_weight: 1000
 tv_weight: 2
+use_style_loss: True
+style_image_path: style_images/rust.jpg
+style_crop_size: 224
+style_stride: 112
+style_loss_weight: 20
+style_global_weight_ratio: 0.3
+
+
 
 # test --------------------------------------------------------------
 test_dataset_path: data/dataset/10m/extend
