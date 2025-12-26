@@ -78,10 +78,14 @@ class Mesh:
 
         self.__atlas = self.__aux.texture_atlas
         self.__atlas_backup = self.__aux.texture_atlas.clone()
+        self.__ori_camo = self.__aux.texture_atlas.clone()
 
         idx = self.__faces.materials_idx.cpu().numpy()
         self.__face_material_names = np.array(list(self.__aux.texture_images.keys()))[idx]
         self.__face_material_names[idx == -1] = ""
+
+    def __get_ori_camo(self):
+        return self.__ori_camo
 
     def __fix_orientation(self, angle_deg=90.0, scale_factor=1.0, offset=[0.0, 0.0, 0.0]):
         # 1. 站立修正

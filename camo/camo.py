@@ -7,12 +7,15 @@ from log import logger
 
 
 class Camo:
-    def __init__(self, config, shape):
+    def __init__(self, config, mesh):
         self.__config = config
         self.__device = torch.device("cpu")
         if config.use_cuda:
             self.__device = torch.device(config.device)
-        self.__camo = torch.rand(shape).to(self.__device)
+        if config.camo_init_random:
+            self.__camo = torch.rand(mesh.shape).to(self.__device)
+        else:
+            self.__camo = mesh.__get_ori_camo.to(self.__device)
         self.__camo_mask = None
 
     def item(self):

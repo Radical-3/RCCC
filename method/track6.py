@@ -89,7 +89,7 @@ def track6():
 
     renderer = Renderer(config)
     mesh = Mesh(config)
-    camo = Camo(config, mesh.shape())
+    camo = Camo(config, mesh)
 
     camo.load_mask()
     if config.continue_train:
